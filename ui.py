@@ -14,6 +14,7 @@ COMMANDS = [
     "all contacts",
     "exit",
     "quit",
+    "set address",
     "show birthday",
     "show birthdays",
     "change phone",
@@ -73,7 +74,7 @@ def draw_header():
     table.add_row(
         "[bold cyan]add email[/bold cyan] NAME EMAIL",
         "[bold cyan]change email[/bold cyan] NAME OLD_EMAIL NEW_EMAIL",
-        "",
+        "[bold cyan]set address[/bold cyan] NAME ADDRESS",
     )
     table.add_row(
         "[bold cyan]all contacts[/bold cyan] show all contacts",
