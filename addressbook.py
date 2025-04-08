@@ -28,7 +28,6 @@ class Name(Field):
     def __init__(self, name: str):
         super().__init__(name.strip().capitalize())
 
-
 class Phone(Field):
     def __init__(self, phone: str):
         if self.__validate_phone(phone):
@@ -69,6 +68,9 @@ class Email(Field):
     def __str__(self):
         return f"Email: {self.value}"
 
+class Address(Field):
+    def __init__(self, value: str):
+        super().__init__(value.strip())
 
 class Record:
     def __init__(self, name: str):
@@ -76,6 +78,7 @@ class Record:
         self.phones = []
         self.birthday = None
         self.emails = []
+        self.address = None
 
     def add_phone(self, new_phone: str) -> bool:
         if self.__get_phone_index(new_phone) is None:
@@ -126,6 +129,9 @@ class Record:
     def add_birthday(self, b_date: str) -> None:
         self.birthday = Birthday(b_date)
 
+    def set_address(self, address: str) -> None:
+        self.address = Address(address)
+
     def __get_phone_index(self, phone_number: str) -> int | None:
         for index, phone in enumerate(self.phones):
             if phone.value == phone_number:
@@ -151,6 +157,7 @@ class Record:
             f"phones: {phones} "
             f"Birthday: {birthday}"
             f"Emails: {emails}"
+            f"Address: {self.address if self.address else "not set"}"
         )
 
 
