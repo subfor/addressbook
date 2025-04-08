@@ -9,8 +9,10 @@ from email_validator import EmailNotValidError, validate_email
 class PhoneFormatError(Exception):
     pass
 
+
 class DateFormatError(Exception):
     pass
+
 
 class EmailFormatError(Exception):
     pass
@@ -27,6 +29,7 @@ class Field:
 class Name(Field):
     def __init__(self, name: str):
         super().__init__(name.strip().capitalize())
+
 
 class Phone(Field):
     def __init__(self, phone: str):
@@ -68,9 +71,11 @@ class Email(Field):
     def __str__(self):
         return f"Email: {self.value}"
 
+
 class Address(Field):
     def __init__(self, value: str):
         super().__init__(value.strip())
+
 
 class Record:
     def __init__(self, name: str):
@@ -154,9 +159,9 @@ class Record:
         emails = ", ".join(e.value for e in self.emails)
         return (
             f"Contact name: {self.name.value}, "
-            f"phones: {phones} "
-            f"Birthday: {birthday}"
-            f"Emails: {emails}"
+            f"phones: {phones}, "
+            f"Birthday: {birthday}, "
+            f"Emails: {emails if self.emails else "not set"}, "
             f"Address: {self.address if self.address else "not set"}"
         )
 

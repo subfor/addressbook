@@ -2,7 +2,8 @@ from functools import wraps
 
 from prompt_toolkit import PromptSession
 
-from addressbook import AddressBook, DateFormatError, PhoneFormatError, Record, EmailFormatError
+from addressbook import (AddressBook, DateFormatError, EmailFormatError,
+                         PhoneFormatError, Record)
 from ui import autocomplete, bottom_toolbar, draw_header, style
 
 
@@ -23,7 +24,7 @@ def input_error(func):
                     print("Usage: change NAME OLD_NUMBER NEW_NUMBER")
                 case "change_email":
                     print("Usage: change email NAME OLD_EMAIL NEW_EMAIL")
-                case "show phone":
+                case "show_phone":
                     print("Usage: phone NAME")
                 case "add_birthday":
                     print("Usage: add birthday NAME DATE(DD.MM.YYYY)")
@@ -145,6 +146,7 @@ def add_birthday(args, book: AddressBook):
         record.add_birthday(b_date)
         return "Added"
     return "Contact not found"
+
 
 @input_error
 def set_address(args, book: AddressBook):
