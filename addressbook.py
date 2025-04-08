@@ -3,12 +3,16 @@ import re
 from collections import UserDict
 from datetime import datetime, timedelta
 
+from email_validator import EmailNotValidError, validate_email
+
 
 class PhoneFormatError(Exception):
     pass
 
-
 class DateFormatError(Exception):
+    pass
+
+class EmailFormatError(Exception):
     pass
 
 
@@ -23,7 +27,6 @@ class Field:
 class Name(Field):
     def __init__(self, name: str):
         super().__init__(name.strip().capitalize())
-
 
 class Phone(Field):
     def __init__(self, phone: str):
@@ -53,11 +56,29 @@ class Birthday(Field):
         return f"Birthday: {self.value.strftime("%d.%m.%Y")}"
 
 
+class Email(Field):
+    def __init__(self, value):
+        try:
+            email_info = validate_email(value, check_deliverability=False)
+
+            super().__init__(email_info.normalized)
+        except EmailNotValidError as e:
+            raise EmailFormatError(f"Invalid email format: {e.args[0]}") from e
+
+    def __str__(self):
+        return f"Email: {self.value}"
+
+class Address(Field):
+    def __init__(self, value: str):
+        super().__init__(value.strip())
+
 class Record:
     def __init__(self, name: str):
         self.name = Name(name)
         self.phones = []
         self.birthday = None
+        self.emails = []
+        self.address = None
 
     def add_phone(self, new_phone: str) -> bool:
         if self.__get_phone_index(new_phone) is None:
@@ -82,12 +103,44 @@ class Record:
     def find_phone(self, phone_number: str) -> str:
         return phone_number if self.__get_phone_index(phone_number) else ""
 
+    def add_email(self, new_email: str) -> bool:
+        if self.__get_email_index(new_email) is None:
+            self.emails.append(Email(new_email))
+            return True
+        return False
+
+    def remove_email(self, email_address: str) -> bool:
+        index = self.__get_email_index(email_address)
+        if index is not None:
+            self.emails.pop(index)
+            return True
+        return False
+
+    def edit_email(self, old_email: str, new_email: str) -> bool:
+        index = self.__get_email_index(old_email)
+        if index is not None:
+            self.emails[index] = Email(new_email)
+            return True
+        return False
+
+    def find_email(self, email_address: str) -> str:
+        return email_address if self.__get_email_index(email_address) else ""
+
     def add_birthday(self, b_date: str) -> None:
         self.birthday = Birthday(b_date)
+
+    def set_address(self, address: str) -> None:
+        self.address = Address(address)
 
     def __get_phone_index(self, phone_number: str) -> int | None:
         for index, phone in enumerate(self.phones):
             if phone.value == phone_number:
+                return index
+        return None
+
+    def __get_email_index(self, email_str: str) -> int | None:
+        for index, email in enumerate(self.emails):
+            if email.value == email_str:
                 return index
         return None
 
@@ -98,10 +151,13 @@ class Record:
             if self.birthday is not None
             else "not set"
         )
+        emails = ", ".join(e.value for e in self.emails)
         return (
             f"Contact name: {self.name.value}, "
             f"phones: {phones} "
             f"Birthday: {birthday}"
+            f"Emails: {emails}"
+            f"Address: {self.address if self.address else "not set"}"
         )
 
 

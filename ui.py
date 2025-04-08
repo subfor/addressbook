@@ -6,6 +6,7 @@ from rich.table import Table
 
 COMMANDS = [
     "add contact",
+    "add email",
     "add birthday",
     "add note",
     "hello",
@@ -13,9 +14,11 @@ COMMANDS = [
     "all contacts",
     "exit",
     "quit",
+    "set address",
     "show birthday",
     "show birthdays",
     "change phone",
+    "change email",
     "show phone",
 ]
 
@@ -67,6 +70,11 @@ def draw_header():
         "[bold cyan]change contact[/bold cyan] NAME OLD NEW",
         "[bold cyan]show phone[/bold cyan] NAME",
         "[bold cyan]show birthday[/bold cyan] NAME",
+    )
+    table.add_row(
+        "[bold cyan]add email[/bold cyan] NAME EMAIL",
+        "[bold cyan]change email[/bold cyan] NAME OLD_EMAIL NEW_EMAIL",
+        "[bold cyan]set address[/bold cyan] NAME ADDRESS",
     )
     table.add_row(
         "[bold cyan]all contacts[/bold cyan] show all contacts",
