@@ -150,7 +150,8 @@ def add_birthday(args, book: AddressBook):
 
 @input_error
 def set_address(args, book: AddressBook):
-    name, address = args
+    name, *address_parts = args
+    address = " ".join(address_parts)
     record = book.find(name)
     if record:
         record.set_address(address)
