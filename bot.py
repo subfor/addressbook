@@ -1,10 +1,9 @@
 from functools import wraps
 
 from prompt_toolkit import PromptSession
-from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.lexers import PygmentsLexer
 
 from addressbook import AddressBook, DateFormatError, PhoneFormatError, Record
+from ui import autocomplete, bottom_toolbar, draw_header, style
 
 
 def input_error(func):
@@ -17,15 +16,15 @@ def input_error(func):
                 case "parse_input":
                     print("Command can not be blank")
                 case "add_contact":
-                    print("Usage: add NAME PHONE_NUMBER")
+                    print("Usage: add contact NAME PHONE_NUMBER")
                 case "change_contact":
                     print("Usage: change NAME OLD_NUMBER NEW_NUMBER")
-                case "show_phone":
+                case "show phone":
                     print("Usage: phone NAME")
                 case "add_birthday":
-                    print("Usage: add-birthday NAME DATE(DD.MM.YYYY)")
+                    print("Usage: add birthday NAME DATE(DD.MM.YYYY)")
                 case "show_birthday":
-                    print("Usage: show-birthday NAME")
+                    print("Usage: show birthday NAME")
                 case _:
                     print(f"error in {func.__name__}")
         except PhoneFormatError:
@@ -36,11 +35,25 @@ def input_error(func):
     return inner
 
 
+# @input_error
+# def parse_input(user_input):
+#     cmd, *args = user_input.split()
+#     cmd = cmd.strip().lower()
+#     return cmd, *args
+
+
 @input_error
 def parse_input(user_input):
-    cmd, *args = user_input.split()
-    cmd = cmd.strip().lower()
-    return cmd, *args
+    parts = user_input.strip().lower().split()
+    if not parts:
+        return None
+    if len(parts) >= 2:
+        command = f"{parts[0]} {parts[1]}"
+        args = parts[2:]
+    else:
+        command = parts[0]
+        args = []
+    return command, *args
 
 
 @input_error
@@ -122,30 +135,19 @@ def show_birthdays_next_week(book: AddressBook):
     return "Birthdays not found"
 
 
-autocomplete = WordCompleter(
-    [
-        "add",
-        "hello",
-        "close",
-        "all",
-        "exit",
-        "quit",
-        "show-birthday",
-        "show_birthdays_next_week",
-        "change",
-        "phone",
-    ],
-    ignore_case=True,
-)
-
-
 def main():
+    draw_header()
     book = AddressBook.load()
-    session = PromptSession(completer=autocomplete)
+    session = PromptSession(
+        completer=autocomplete, complete_while_typing=True, style=style
+    )
     print("Welcome to the assistant bot!")
     while True:
         try:
-            user_input = session.prompt(">")
+            #     user_input = session.prompt(">")
+            user_input = session.prompt(
+                [("class:prompt", ">>> ")], bottom_toolbar=bottom_toolbar
+            )
             # user_input = input("Enter a command: ")
         except KeyboardInterrupt:
             print("Ctrl+c")
@@ -155,28 +157,28 @@ def main():
         command, *args = parsed_user_input
 
         match command:
-            case "close" | "exit":
+            case "exit" | "quit":
                 break
             case "hello":
                 print("How can I help you?")
-            case "add":
+            case "add contact":
                 if message := add_contact(args, book):
                     print(message)
-            case "all":
+            case "all contacts":
                 print(show_all(book))
-            case "add-birthday":
+            case "add birthday":
                 if message := add_birthday(args, book):
                     print(message)
-            case "show-birthday":
+            case "show birthday":
                 if message := show_birthday(args, book):
                     print(message)
-            case "birthdays":
+            case "show birthdays":
                 if message := show_birthdays_next_week(book):
                     print(message)
-            case "change":
+            case "change phone":
                 if message := change_contact(args, book):
                     print(message)
-            case "phone":
+            case "show phone":
                 if message := show_phone(args, book):
                     print(message)
             case _:
