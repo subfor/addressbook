@@ -4,7 +4,7 @@ from prompt_toolkit import PromptSession
 
 from addressbook import (AddressBook, DateFormatError, EmailFormatError,
                          PhoneFormatError, Record)
-from ui import autocomplete, bottom_toolbar, draw_header, style
+from ui import autocomplete, bottom_toolbar, draw_contacts, draw_header, style
 
 
 def input_error(func):
@@ -135,7 +135,7 @@ def change_email(args, book: AddressBook):
 def show_all(book: AddressBook):
     if not book:
         return "Contacts not found."
-    return str(book)
+    return draw_contacts(contacts=book.get_all_records())
 
 
 @input_error
@@ -217,7 +217,7 @@ def main():
                 if message := add_email(args, book):
                     print(message)
             case "all contacts":
-                print(show_all(book))
+                show_all(book)
             case "add birthday":
                 if message := add_birthday(args, book):
                     print(message)

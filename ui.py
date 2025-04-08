@@ -91,3 +91,17 @@ def draw_header():
     )
 
     console.print(panel)
+
+
+def draw_contacts(contacts: list) -> None:
+
+    table = Table(title="Found contacts")
+
+    table.add_column("Contact name", justify="left", style="cyan", no_wrap=True)
+    table.add_column("Phones", style="magenta")
+    table.add_column("Birthday", justify="right", style="green")
+    table.add_column("Email", justify="right", style="green")
+    table.add_column("Address", justify="right", style="green")
+    for contact in contacts:
+        table.add_row(*contact)
+    console.print(table)

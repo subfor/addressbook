@@ -137,6 +137,17 @@ class Record:
     def set_address(self, address: str) -> None:
         self.address = Address(address)
 
+    def get_info(self) -> list:
+        phones = "; ".join(p.value for p in self.phones) if self.phones else "-"
+        birthday = (
+            self.birthday.value.strftime("%d.%m.%Y")
+            if self.birthday is not None
+            else "-"
+        )
+        emails = ", ".join(e.value for e in self.emails) if self.emails else "-"
+        address = self.address.value if self.address else "-"
+        return [self.name.value, phones, birthday, emails, address]
+
     def __get_phone_index(self, phone_number: str) -> int | None:
         for index, phone in enumerate(self.phones):
             if phone.value == phone_number:
@@ -213,6 +224,9 @@ class AddressBook(UserDict):
                 )
 
         return congrat_list
+
+    def get_all_records(self) -> list:
+        return [record.get_info() for record in self.data.values()]
 
     def __check_weekend(self, date: datetime.date) -> int:
         match date.isoweekday():
