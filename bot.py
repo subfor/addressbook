@@ -29,6 +29,8 @@ def input_error(func):
                     print("Usage: add birthday NAME DATE(DD.MM.YYYY)")
                 case "show_birthday":
                     print("Usage: show birthday NAME")
+                case "set_address":
+                    print("Usage: set address NAME ADDRESS")
                 case _:
                     print(f"error in {func.__name__}")
         except PhoneFormatError:
@@ -144,6 +146,15 @@ def add_birthday(args, book: AddressBook):
         return "Added"
     return "Contact not found"
 
+@input_error
+def set_address(args, book: AddressBook):
+    name, address = args
+    record = book.find(name)
+    if record:
+        record.set_address(address)
+        return "Address set"
+    return "Contact not found"
+
 
 @input_error
 def show_birthday(args, book: AddressBook):
@@ -207,6 +218,9 @@ def main():
                 print(show_all(book))
             case "add birthday":
                 if message := add_birthday(args, book):
+                    print(message)
+            case "set address":
+                if message := set_address(args, book):
                     print(message)
             case "show birthday":
                 if message := show_birthday(args, book):
