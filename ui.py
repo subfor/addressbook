@@ -3,6 +3,7 @@ from prompt_toolkit.styles import Style
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from rich.text import Text
 
 COMMANDS = [
     "add contact",
@@ -33,8 +34,6 @@ class CommandCompleter(WordCompleter):
         yield from super().get_completions(document, complete_event)
 
 
-console = Console()
-
 style = Style.from_dict(
     {
         "prompt": "bold #00ffcc",
@@ -49,13 +48,17 @@ style = Style.from_dict(
 autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
 
-def bottom_toolbar():
+console = Console()
+
+
+def bottom_toolbar() -> list:
     return [
         ("class:bottom-toolbar", " 🧠 Tab — autocomplete | Ctrl+C or exit/quit — exit")
     ]
 
 
-def draw_header():
+def draw_header() -> None:
+
     table = Table.grid(expand=True)
     table.add_column(justify="left", ratio=1)
     table.add_column(justify="left", ratio=1)
@@ -67,7 +70,7 @@ def draw_header():
         "[bold cyan]add note[/bold cyan] TITLE",
     )
     table.add_row(
-        "[bold cyan]change contact[/bold cyan] NAME OLD NEW",
+        "[bold cyan]change phone[/bold cyan] NAME OLD NEW",
         "[bold cyan]show phone[/bold cyan] NAME",
         "[bold cyan]show birthday[/bold cyan] NAME",
     )
@@ -90,4 +93,43 @@ def draw_header():
         padding=(1, 2),
     )
 
+    console.print(panel)
+
+
+def draw_contacts(contacts: list) -> None:
+
+    table = Table(title="Found contacts")
+
+    table.add_column("Contact name", justify="left", style="cyan", no_wrap=True)
+    table.add_column("Phones", style="magenta")
+    table.add_column("Birthday", justify="left", style="green")
+    table.add_column("Email", justify="left", style="green")
+    table.add_column("Address", justify="left", style="green")
+    for contact in contacts:
+        table.add_row(*contact)
+    console.print(table)
+
+
+def draw_record(record: list) -> None:
+    name, phones, b_day, emails, address = record
+
+    table = Table.grid(padding=(0, 2))
+    table.add_column(
+        style="bold cyan",
+        justify="left",
+    )
+    table.add_column(style="white", overflow="fold")
+
+    table.add_row("📱 Phones:", phones)
+    table.add_row("🎂 Birthday:", b_day)
+    table.add_row("📧 Emails:", emails)
+    table.add_row("🏠 Address:", address)
+
+    panel = Panel(
+        table,
+        title=f"[bold magenta]{name}[/bold magenta]",
+        border_style="bright_magenta",
+        padding=(1, 2),
+        expand=False,
+    )
     console.print(panel)
