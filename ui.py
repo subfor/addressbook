@@ -70,7 +70,7 @@ def draw_header() -> None:
         "[bold cyan]add note[/bold cyan] TITLE",
     )
     table.add_row(
-        "[bold cyan]change contact[/bold cyan] NAME OLD NEW",
+        "[bold cyan]change phone[/bold cyan] NAME OLD NEW",
         "[bold cyan]show phone[/bold cyan] NAME",
         "[bold cyan]show birthday[/bold cyan] NAME",
     )
