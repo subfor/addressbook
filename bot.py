@@ -6,7 +6,9 @@ from addressbook import (AddressBook, DateFormatError, EmailFormatError,
                          PhoneFormatError)
 from ui import (autocomplete, bottom_toolbar, draw_header, style)
 
-from commands import find_command
+from commands import add_contact, add_email, show_all, add_birthday, set_address, show_birthday, \
+    show_birthdays, change_phone, change_email, show_phone
+
 
 def input_error(func):
     @wraps(func)
@@ -42,7 +44,6 @@ def parse_input(user_input):
         args = []
     return command, *args
 
-
 def main():
     draw_header()
     book = AddressBook.load()
@@ -68,14 +69,28 @@ def main():
                     break
                 case "hello":
                     print("How can I help you?")
+                case "add contact":
+                    add_contact(book)
+                case "add email":
+                    add_email(book)
+                case "all contacts":
+                    show_all(book)
+                case "add birthday":
+                    add_birthday(book)
+                case "set address":
+                    set_address(book)
+                case "show birthday":
+                    show_birthday(book)
+                case "show birthdays":
+                    show_birthdays(book)
+                case "change phone":
+                    change_phone(book)
+                case "change email":
+                    change_email(book)
+                case "show phone":
+                    show_phone(book)
                 case _:
-                    command_fn = find_command(command)
-
-                    if command_fn is None:
-                        print("Invalid command.")
-                        continue
-
-                    command_fn(book, session)
+                    print("Invalid command.")
     except KeyboardInterrupt:
         print("\n[✋] Interrupted by user (Ctrl+C)")
     book.save()
