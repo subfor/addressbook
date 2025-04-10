@@ -1,15 +1,54 @@
+from functools import wraps
+from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.text import Text
+from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
+                         PhoneFormatError, Record, Comment)
 
-# Основные команды, которые будут подхватываться автодополнением
+# Validating input
+def validated_prompt(label: str, validator=None, optional=False):
+    def wrapper(session: PromptSession):
+        while True:
+            try:
+                value = session.prompt(f"🔹 {label}: ").strip()
+                if not value and optional:
+                    return ""
+                if validator:
+                    validator(value)
+                return value
+            except KeyboardInterrupt:
+                raise
+            except (NameFormatError, PhoneFormatError, EmailFormatError, DateFormatError) as e:
+                print(f"[!] {e}")
+            except Exception as e:
+                print(f"[!] Invalid input: {e}")
+    return wrapper
+
+# Input functions
+get_name = validated_prompt("Enter name", validator=Record.validate_name)
+get_phone = validated_prompt("Enter phone", validator=Record.validate_phone)
+get_email = validated_prompt("Enter email (optional)", validator=Record.validate_email, optional=True)
+get_birthday = validated_prompt("Enter birthday (DD.MM.YYYY, optional)", validator=Record.validate_birthday, optional=True)
+get_address = validated_prompt("Enter address (optional)", optional=True)
+
+# Additional input functions for comments
+get_comment = validated_prompt("Enter comment for contact", optional=True)
+
+def get_new_email(session: PromptSession):
+    return session.prompt("🔹 Enter new email: ").strip()
+
+def get_new_phone(session: PromptSession):
+    return session.prompt("🔹 Enter new phone: ").strip()
+
+# Autocomplete
 COMMANDS = [
     "add contact",
     "add email",
     "add birthday",
+    "add comment",
     "add note",
     "hello",
     "all contacts",
@@ -22,148 +61,94 @@ COMMANDS = [
     "change email",
     "show phone",
     "show notes",
-    "edit note",
-    "delete note",
-    "search notes",
 ]
 
-# Улучшенный Completer, чтобы не предлагать команды, когда начинаем вводить аргументы
 class CommandCompleter(WordCompleter):
     def get_completions(self, document, complete_event):
         text = document.text_before_cursor.strip().lower()
-        if " " in text:
+        if not any(text in command for command in COMMANDS):
             return
         yield from super().get_completions(document, complete_event)
 
-# Стиль для prompt_toolkit — контрастный
-style = Style.from_dict(
-    {
-        "prompt": "bold #00ffff",  # яркий голубой (бирюзовый)
-        "": "#ffffff",  # основной текст белый
-        "completion-menu.completion": "bg:#1f1f1f #aaaaaa",
-        "completion-menu.completion.current": "bg:#00ffff #ffffff",
-        "scrollbar.background": "bg:#3a3a3a",
-        "scrollbar.button": "bg:#5f5f5f",
-        "bottom-toolbar": "italic #888888",
-    }
-)
-
-# Объект для автодополнения
 autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
-# Console из rich для вывода цветного текста и таблиц
+style = Style.from_dict({
+    "prompt": "bold #00ffcc",
+    "": "#ffffff",
+    "completion-menu.completion": "bg:#1f1f1f #aaaaaa",
+    "completion-menu.completion.current": "bg:#00afff #ffffff",
+    "scrollbar.background": "bg:#3a3a3a",
+    "scrollbar.button": "bg:#5f5f5f",
+    "bottom-toolbar": "italic #888888",
+    "address": "bold #00ff00",  # Пример корректного цвета для address
+    "comment": "italic #20b2aa",  # стиль для комментариев
+})
+
 console = Console()
 
-# Нижняя панелька подсказок
 def bottom_toolbar() -> list:
     return [
         ("class:bottom-toolbar", " 🧠 Tab — autocomplete | Ctrl+C or exit/quit — exit")
     ]
 
+# Header
 def draw_header() -> None:
-    """
-    Отрисовывает верхнюю панель с краткими подсказками команд.
-    """
     table = Table.grid(expand=True)
     table.add_column(justify="left", ratio=1)
     table.add_column(justify="left", ratio=1)
     table.add_column(justify="left", ratio=1)
 
-    # Подсказки команд (двухсловных)
-    table.add_row(
-        "[bold bright_cyan]add contact[/bold bright_cyan] [white]NAME PHONE[/white]",
-        "[bold bright_cyan]add birthday[/bold bright_cyan] [white]NAME DATE[/white]",
-        "[bold bright_cyan]add note[/bold bright_cyan] [white]TITLE CONTENT [TAGS][/white]",
-    )
-    table.add_row(
-        "[bold bright_cyan]change phone[/bold bright_cyan] [white]NAME OLD NEW[/white]",
-        "[bold bright_cyan]show phone[/bold bright_cyan] [white]NAME[/white]",
-        "[bold bright_cyan]show birthday[/bold bright_cyan] [white]NAME[/white]",
-    )
-    table.add_row(
-        "[bold bright_cyan]add email[/bold bright_cyan] [white]NAME EMAIL[/white]",
-        "[bold bright_cyan]change email[/bold bright_cyan] [white]NAME OLD_EMAIL NEW_EMAIL[/white]",
-        "[bold bright_cyan]set address[/bold bright_cyan] [white]NAME ADDRESS[/white]",
-    )
-    table.add_row(
-        "[bold bright_cyan]all contacts[/bold bright_cyan]",
-        "[bold bright_cyan]show birthdays[/bold bright_cyan]",
-        "[bold bright_cyan]exit / quit[/bold bright_cyan]",
-    )
+    table.add_row("[bold cyan]add contact[/bold cyan]", "[bold cyan]add birthday[/bold cyan]", "[bold cyan]add note[/bold cyan]")
+    table.add_row("[bold cyan]change phone[/bold cyan]", "[bold cyan]show phone[/bold cyan]", "[bold cyan]show birthday[/bold cyan]")
+    table.add_row("[bold cyan]add email[/bold cyan]", "[bold cyan]change email[/bold cyan]", "[bold cyan]set address[/bold cyan]")
+    table.add_row("[bold cyan]all contacts[/bold cyan]", "[bold cyan]birthdays[/bold cyan]", "[bold cyan]exit / quit[/bold cyan]")
 
     panel = Panel(
         table,
-        title="[bold bright_magenta]📒 Address Book[/bold bright_magenta]",
-        subtitle="[bright_magenta]Manage contacts, phones, birthdays, notes[/bright_magenta]",
+        title="[bold magenta]📒 Address Book[/bold magenta]",
+        subtitle="[magenta]Interactive assistant.[/magenta]",
         border_style="bright_magenta",
         padding=(1, 2),
     )
 
     console.print(panel)
 
-
+# Formatted output
 def draw_contacts(contacts: list) -> None:
-    """
-    Отрисовывает таблицу со всеми найденными контактами.
-    """
-    table = Table(title="Found contacts", border_style="bright_magenta")
-
-    table.add_column("Contact name", justify="left", style="bright_yellow", no_wrap=True)
-    table.add_column("Phones", style="bright_cyan")
-    table.add_column("Birthday", justify="left", style="bright_green")
-    table.add_column("Email", justify="left", style="bright_white")
-    table.add_column("Address", justify="left", style="bright_blue")
-    table.add_column("Notes", justify="left", style="bright_magenta")
+    table = Table(title="Found contacts")
+    table.add_column("Contact name", justify="left", style="cyan", no_wrap=True)
+    table.add_column("Phones", style="magenta")
+    table.add_column("Birthday", justify="left", style="green")
+    table.add_column("Email", justify="left", style="green")
+    table.add_column("Address", justify="left", style="address")  # Применение стиля для адреса
+    table.add_column("Comment", justify="left", style="comment")  # Применение стиля для комментария
 
     for contact in contacts:
-        name_str = str(contact.name.value)
-        phones_str = (
-            "; ".join(p.value for p in contact.phones) if contact.phones else "-"
-        )
-        birthday_str = (
-            contact.birthday.value.strftime("%d.%m.%Y")
-            if contact.birthday
-            else "-"
-        )
-        emails_str = (
-            ", ".join(e.value for e in contact.emails)
-            if contact.emails
-            else "-"
-        )
-        address_str = str(contact.address.value) if contact.address else "-"
-        notes_str = (
-            "; ".join(note.title for note in contact.notes)
-            if contact.notes
-            else "No notes"
-        )
-
-        table.add_row(
-            name_str, phones_str, birthday_str, emails_str, address_str, notes_str
-        )
-
+        if not isinstance(contact, (list, tuple)) or len(contact) != 6:
+            print(f"Invalid contact format: {contact}")
+            continue
+        table.add_row(*contact)
     console.print(table)
 
-
 def draw_record(record: list) -> None:
-    """
-    Отрисовывает панель (Panel) с подробной информацией по одному контакту.
-    record: [name, phones, birthday, emails, address, notes]
-    """
-    name, phones, b_day, emails, address, notes = record
+    if not isinstance(record, list) or len(record) != 6:
+        print(f"Invalid record format: {record}")
+        return
 
+    name, phones, b_day, emails, address, comment = record
     table = Table.grid(padding=(0, 2))
-    table.add_column(style="bold bright_cyan", justify="left")
+    table.add_column(style="bold cyan", justify="left")
     table.add_column(style="white", overflow="fold")
 
     table.add_row("📱 Phones:", phones)
     table.add_row("🎂 Birthday:", b_day)
     table.add_row("📧 Emails:", emails)
-    table.add_row("🏠 Address:", address)
-    table.add_row("📝 Notes:", notes)
+    table.add_row("🏠 Address:", address, style="address")  # Применение стиля для адреса
+    table.add_row("💬 Comment:", comment, style="comment")  # Применение стиля для комментария
 
     panel = Panel(
         table,
-        title=f"[bold bright_magenta]{name}[/bold bright_magenta]",
+        title=f"[bold magenta]{name}[/bold magenta]",
         border_style="bright_magenta",
         padding=(1, 2),
         expand=False,
