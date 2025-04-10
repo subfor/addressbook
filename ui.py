@@ -11,11 +11,14 @@ from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
 # Validete input
 
 
-def validated_prompt(label: str, validator=None, optional=False):
-    def wrapper():
+def validated_prompt(label: str, validator=None, completer=None, optional=False):
+    def wrapper(session: PromptSession | None = None, label: str = label):
+        if session is None:
+            session = PromptSession(completer=None)
+
         while True:
             try:
-                value = PromptSession(completer=None).prompt(f"🔹 {label}: ").strip()
+                value = session.prompt(f"🔹 {label}: ", completer=completer).strip()
                 if not value and optional:
                     return ""
                 if validator:
@@ -31,6 +34,9 @@ def validated_prompt(label: str, validator=None, optional=False):
                 print("[!] Wrong email format.")
             except DateFormatError:
                 print("[!] Invalid date format. Use DD.MM.YYYY.")
+            except EOFError:
+                print("[!] Aborted")
+                return None
             except Exception:
                 print("[!] Invalid input. Try again.")
 
@@ -55,6 +61,8 @@ get_old_phone = validated_prompt("Enter old phone", validator=Record.validate_ph
 get_new_phone = validated_prompt("Enter new phone", validator=Record.validate_phone)
 get_old_email = validated_prompt("Enter old email", validator=Record.validate_email)
 get_new_email = validated_prompt("Enter new email", validator=Record.validate_email)
+
+get_term = validated_prompt("Enter search term")
 
 # Autocomplete
 

@@ -1,13 +1,13 @@
 from functools import wraps
 
-from prompt_toolkit import PromptSession
+from prompt_toolkit import PromptSession, prompt
 
 from addressbook import (AddressBook, DateFormatError, EmailFormatError,
                          PhoneFormatError)
 from ui import (autocomplete, bottom_toolbar, draw_header, style)
 
 from commands import add_contact, add_email, show_all, add_birthday, set_address, show_birthday, \
-    show_birthdays, change_phone, change_email, show_phone
+    show_birthdays, change_phone, change_email, show_phone, search_contacts, edit_contact
 
 
 def input_error(func):
@@ -47,14 +47,13 @@ def parse_input(user_input):
 def main():
     draw_header()
     book = AddressBook.load()
-    session = PromptSession(
-        completer=autocomplete, complete_while_typing=True, style=style
-    )
     print("Welcome to Personal Helper")
     try:
         while True:
-            user_input = session.prompt(
-                [("class:prompt", ">>> ")], bottom_toolbar=bottom_toolbar
+            user_input = prompt(
+                [("class:prompt", ">>> ")], bottom_toolbar=bottom_toolbar,
+                completer=autocomplete, complete_while_typing=True, style=style,
+                validator=None,
             )
 
             parsed_user_input = parse_input(user_input)
@@ -77,6 +76,8 @@ def main():
                     show_all(book)
                 case "add birthday":
                     add_birthday(book)
+                case "edit contact":
+                    edit_contact(book)
                 case "set address":
                     set_address(book)
                 case "show birthday":
@@ -89,6 +90,8 @@ def main():
                     change_email(book)
                 case "show phone":
                     show_phone(book)
+                case "search contacts":
+                    search_contacts(book)
                 case _:
                     print("Invalid command.")
     except KeyboardInterrupt:

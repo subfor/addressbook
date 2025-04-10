@@ -2,6 +2,7 @@ import pickle
 import re
 from collections import UserDict
 from datetime import datetime, timedelta
+from typing import Optional
 
 from email_validator import EmailNotValidError, validate_email
 
@@ -40,27 +41,32 @@ class Name(Field):
 
 class Phone(Field):
     def __init__(self, phone: str):
-        if self.__validate_phone(phone):
+        if self.validate_phone(phone):
             super().__init__(phone)
         else:
             raise PhoneFormatError(f"[!]Wrong phone format {phone}")
 
-    def __validate_phone(self, value: str) -> bool:
+    @staticmethod
+    def validate_phone(value: str) -> bool:
         pattern = re.compile(r"^\d{10}$")
         return bool(pattern.match(value))
 
 
 class Birthday(Field):
     def __init__(self, value):
-        if self.__validate_date(value):
+        if self.validate_date(value):
             b_date = datetime.strptime(value.strip(), "%d.%m.%Y").date()
             super().__init__(b_date)
         else:
             raise DateFormatError("Invalid date format. Use DD.MM.YYYY")
 
-    def __validate_date(self, value):
+    @staticmethod
+    def validate_date(value):
         pattern = re.compile(r"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.\d{4}$")
         return bool(pattern.match(value.strip()))
+
+    def stringify_date(self):
+        return self.value.strftime('%d.%m.%Y')
 
     def __str__(self):
         return f"Birthday: {self.value.strftime('%d.%m.%Y')}"
@@ -74,6 +80,14 @@ class Email(Field):
         except EmailNotValidError as e:
             raise EmailFormatError(f"Invalid email format: {e.args[0]}") from e
 
+    @staticmethod
+    def is_email_valid(value: str):
+        try:
+            validate_email(value, check_deliverability=False)
+            return True
+        except EmailNotValidError:
+            return False
+
     def __str__(self):
         return f"Email: {self.value}"
 
@@ -86,10 +100,10 @@ class Address(Field):
 class Record:
     def __init__(self, name: str):
         self.name = Name(name)
-        self.phones = []
-        self.birthday = None
-        self.emails = []
-        self.address = None
+        self.phones: list[Phone] = []
+        self.birthday: Optional[Birthday] = None
+        self.emails: list[Email] = []
+        self.address: Optional[Address] = None
 
     def add_phone(self, new_phone: str) -> bool:
         if self.__get_phone_index(new_phone) is None:
@@ -140,8 +154,8 @@ class Record:
     def add_birthday(self, b_date: str) -> None:
         self.birthday = Birthday(b_date)
 
-    def set_address(self, address: str) -> None:
-        self.address = Address(address)
+    def set_address(self, address: str | None) -> None:
+        self.address = None if address is None or address == "" else Address(address)
 
     def get_info(self) -> list:
         phones = "; ".join(p.value for p in self.phones) if self.phones else "-"
@@ -198,9 +212,22 @@ class Record:
     def validate_birthday(b_day: str):
         Birthday(b_day)
 
+    def check(self, term: str):
+        term = term.strip().lower()
+
+        if term in self.name.value.lower():
+            return True
+        if len([phone.value for phone in self.phones if term in phone.value]) > 0:
+            return True
+        if self.birthday and term in self.birthday.value.strftime("%d.%m.%Y"):
+            return True
+        if len([email.value for email in self.emails if term in email.value.lower()]) > 0:
+            return True
+        if self.address and term in self.address.value.lower():
+            return True
+        return False
 
 class AddressBook(UserDict):
-
     def add_record(self, record: Record) -> None:
         self.data[record.name.value] = record
 
