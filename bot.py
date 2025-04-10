@@ -178,46 +178,45 @@ def main():
     session = PromptSession(
         completer=autocomplete, complete_while_typing=True, style=style
     )
-    print("Welcome to AddressBook!")
-    while True:
-        try:
+    print("Welcome to Personal Helper")
+    try:
+        while True:
             user_input = session.prompt(
                 [("class:prompt", ">>> ")], bottom_toolbar=bottom_toolbar
             )
-        except KeyboardInterrupt:
-            print("Ctrl+c")
-            break
-        if not (parsed_user_input := parse_input(user_input)):
-            continue
-        command, *args = parsed_user_input
+            if not (parsed_user_input := parse_input(user_input)):
+                continue
+            command, *args = parsed_user_input
 
-        match command:
-            case "exit" | "quit":
-                break
-            case "hello":
-                print("How can I help you?")
-            case "add contact":
-                add_contact(book, session)
-            case "add email":
-                add_email(book, session)
-            case "all contacts":
-                show_all(book)
-            case "add birthday":
-                add_birthday(book, session)
-            case "set address":
-                set_address(book, session)
-            case "show birthday":
-                show_birthday(book, session)
-            case "show birthdays":
-                show_birthdays_next_week(book)
-            case "change phone":
-                change_phone(book, session)
-            case "change email":
-                change_email(book, session)
-            case "show phone":
-                show_phone(book, session)
-            case _:
-                print("Invalid command.")
+            match command:
+                case "exit" | "quit":
+                    break
+                case "hello":
+                    print("How can I help you?")
+                case "add contact":
+                    add_contact(book, session)
+                case "add email":
+                    add_email(book, session)
+                case "all contacts":
+                    show_all(book)
+                case "add birthday":
+                    add_birthday(book, session)
+                case "set address":
+                    set_address(book, session)
+                case "show birthday":
+                    show_birthday(book, session)
+                case "show birthdays":
+                    show_birthdays_next_week(book)
+                case "change phone":
+                    change_phone(book, session)
+                case "change email":
+                    change_email(book, session)
+                case "show phone":
+                    show_phone(book, session)
+                case _:
+                    print("Invalid command.")
+    except KeyboardInterrupt:
+        print("\n[✋] Interrupted by user (Ctrl+C)")
     book.save()
     print("\n📁 Address book saved. Bye!")
 

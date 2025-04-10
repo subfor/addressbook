@@ -21,6 +21,8 @@ def validated_prompt(label: str, validator=None, optional=False):
                 if validator:
                     validator(value)
                 return value
+            except KeyboardInterrupt:
+                raise
             except NameFormatError:
                 print("[!] Name cannot be blank")
             except PhoneFormatError:
@@ -138,7 +140,7 @@ def draw_header() -> None:
     panel = Panel(
         table,
         title="[bold magenta]📒 Address Book[/bold magenta]",
-        subtitle="[magenta]Interactive assistant. Type a command and follow prompts.[/magenta]",
+        subtitle="[magenta]Interactive assistant.[/magenta]",
         border_style="bright_magenta",
         padding=(1, 2),
     )
