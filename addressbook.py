@@ -6,6 +6,10 @@ from datetime import datetime, timedelta
 from email_validator import EmailNotValidError, validate_email
 
 
+class NameFormatError(Exception):
+    pass
+
+
 class PhoneFormatError(Exception):
     pass
 
@@ -28,7 +32,10 @@ class Field:
 
 class Name(Field):
     def __init__(self, name: str):
-        super().__init__(name.strip().capitalize())
+        if name:
+            super().__init__(name.strip().capitalize())
+        else:
+            raise NameFormatError("[!]Name cannot be blank")
 
 
 class Phone(Field):
@@ -36,7 +43,7 @@ class Phone(Field):
         if self.__validate_phone(phone):
             super().__init__(phone)
         else:
-            raise PhoneFormatError(f"wrong phone format {phone}")
+            raise PhoneFormatError(f"[!]Wrong phone format {phone}")
 
     def __validate_phone(self, value: str) -> bool:
         pattern = re.compile(r"^\d{10}$")
@@ -56,14 +63,13 @@ class Birthday(Field):
         return bool(pattern.match(value.strip()))
 
     def __str__(self):
-        return f"Birthday: {self.value.strftime("%d.%m.%Y")}"
+        return f"Birthday: {self.value.strftime('%d.%m.%Y')}"
 
 
 class Email(Field):
     def __init__(self, value):
         try:
             email_info = validate_email(value, check_deliverability=False)
-
             super().__init__(email_info.normalized)
         except EmailNotValidError as e:
             raise EmailFormatError(f"Invalid email format: {e.args[0]}") from e
@@ -172,9 +178,25 @@ class Record:
             f"Contact name: {self.name.value}, "
             f"phones: {phones}, "
             f"Birthday: {birthday}, "
-            f"Emails: {emails if self.emails else "not set"}, "
-            f"Address: {self.address if self.address else "not set"}"
+            f"Emails: {emails if self.emails else 'not set'}, "
+            f"Address: {self.address if self.address else 'not set'}"
         )
+
+    @staticmethod
+    def validate_name(name: str):
+        Name(name)
+
+    @staticmethod
+    def validate_phone(phone: str):
+        Phone(phone)
+
+    @staticmethod
+    def validate_email(email: str):
+        Email(email)
+
+    @staticmethod
+    def validate_birthday(b_day: str):
+        Birthday(b_day)
 
 
 class AddressBook(UserDict):

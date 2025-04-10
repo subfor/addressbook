@@ -1,9 +1,62 @@
+from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.text import Text
+
+from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
+                         PhoneFormatError, Record)
+
+# Validete input
+
+
+def validated_prompt(label: str, validator=None, optional=False):
+    def wrapper(session: PromptSession):
+        while True:
+            try:
+                value = PromptSession(completer=None).prompt(f"🔹 {label}: ").strip()
+                if not value and optional:
+                    return ""
+                if validator:
+                    validator(value)
+                return value
+            except KeyboardInterrupt:
+                raise
+            except NameFormatError:
+                print("[!] Name cannot be blank")
+            except PhoneFormatError:
+                print("[!] Wrong phone format.")
+            except EmailFormatError:
+                print("[!] Wrong email format.")
+            except DateFormatError:
+                print("[!] Invalid date format. Use DD.MM.YYYY.")
+            except Exception:
+                print("[!] Invalid input. Try again.")
+
+    return wrapper
+
+
+# Input functions
+
+get_name = validated_prompt("Enter name", validator=Record.validate_name)
+get_phone = validated_prompt("Enter phone", validator=Record.validate_phone)
+get_email = validated_prompt(
+    "Enter email (optional)", validator=Record.validate_email, optional=True
+)
+get_birthday = validated_prompt(
+    "Enter birthday (DD.MM.YYYY, optional)",
+    validator=Record.validate_birthday,
+    optional=True,
+)
+get_address = validated_prompt("Enter address (optional)", optional=True)
+
+get_old_phone = validated_prompt("Enter old phone", validator=Record.validate_phone)
+get_new_phone = validated_prompt("Enter new phone", validator=Record.validate_phone)
+get_old_email = validated_prompt("Enter old email", validator=Record.validate_email)
+get_new_email = validated_prompt("Enter new email", validator=Record.validate_email)
+
+# Autocomplete
 
 COMMANDS = [
     "add contact",
@@ -11,7 +64,6 @@ COMMANDS = [
     "add birthday",
     "add note",
     "hello",
-    # "close",
     "all contacts",
     "exit",
     "quit",
@@ -27,12 +79,12 @@ COMMANDS = [
 class CommandCompleter(WordCompleter):
     def get_completions(self, document, complete_event):
         text = document.text_before_cursor.strip().lower()
-
         if " " in text:
             return
-
         yield from super().get_completions(document, complete_event)
 
+
+autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
 style = Style.from_dict(
     {
@@ -45,8 +97,6 @@ style = Style.from_dict(
         "bottom-toolbar": "italic #888888",
     }
 )
-autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
-
 
 console = Console()
 
@@ -57,38 +107,40 @@ def bottom_toolbar() -> list:
     ]
 
 
-def draw_header() -> None:
+# Header
 
+
+def draw_header() -> None:
     table = Table.grid(expand=True)
     table.add_column(justify="left", ratio=1)
     table.add_column(justify="left", ratio=1)
     table.add_column(justify="left", ratio=1)
 
     table.add_row(
-        "[bold cyan]add contact[/bold cyan] NAME PHONE",
-        "[bold cyan]add birthday[/bold cyan] NAME DATE",
-        "[bold cyan]add note[/bold cyan] TITLE",
+        "[bold cyan]add contact[/bold cyan]",
+        "[bold cyan]add birthday[/bold cyan]",
+        "[bold cyan]add note[/bold cyan]",
     )
     table.add_row(
-        "[bold cyan]change phone[/bold cyan] NAME OLD NEW",
-        "[bold cyan]show phone[/bold cyan] NAME",
-        "[bold cyan]show birthday[/bold cyan] NAME",
+        "[bold cyan]change phone[/bold cyan]",
+        "[bold cyan]show phone[/bold cyan]",
+        "[bold cyan]show birthday[/bold cyan]",
     )
     table.add_row(
-        "[bold cyan]add email[/bold cyan] NAME EMAIL",
-        "[bold cyan]change email[/bold cyan] NAME OLD_EMAIL NEW_EMAIL",
-        "[bold cyan]set address[/bold cyan] NAME ADDRESS",
+        "[bold cyan]add email[/bold cyan]",
+        "[bold cyan]change email[/bold cyan]",
+        "[bold cyan]set address[/bold cyan]",
     )
     table.add_row(
-        "[bold cyan]all contacts[/bold cyan] show all contacts",
-        "[bold cyan]birthdays[/bold cyan] next week",
-        "[bold cyan]exit / close[/bold cyan]",
+        "[bold cyan]all contacts[/bold cyan]",
+        "[bold cyan]birthdays[/bold cyan]",
+        "[bold cyan]exit / quit[/bold cyan]",
     )
 
     panel = Panel(
         table,
         title="[bold magenta]📒 Address Book[/bold magenta]",
-        subtitle="[magenta]Manage contacts, phones, birthdays, notes[/magenta]",
+        subtitle="[magenta]Interactive assistant.[/magenta]",
         border_style="bright_magenta",
         padding=(1, 2),
     )
@@ -96,10 +148,11 @@ def draw_header() -> None:
     console.print(panel)
 
 
+# Formatted output
+
+
 def draw_contacts(contacts: list) -> None:
-
     table = Table(title="Found contacts")
-
     table.add_column("Contact name", justify="left", style="cyan", no_wrap=True)
     table.add_column("Phones", style="magenta")
     table.add_column("Birthday", justify="left", style="green")
@@ -112,12 +165,8 @@ def draw_contacts(contacts: list) -> None:
 
 def draw_record(record: list) -> None:
     name, phones, b_day, emails, address = record
-
     table = Table.grid(padding=(0, 2))
-    table.add_column(
-        style="bold cyan",
-        justify="left",
-    )
+    table.add_column(style="bold cyan", justify="left")
     table.add_column(style="white", overflow="fold")
 
     table.add_row("📱 Phones:", phones)

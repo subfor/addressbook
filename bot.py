@@ -5,7 +5,9 @@ from prompt_toolkit import PromptSession
 from addressbook import (AddressBook, DateFormatError, EmailFormatError,
                          PhoneFormatError, Record)
 from ui import (autocomplete, bottom_toolbar, draw_contacts, draw_header,
-                draw_record, style)
+                draw_record, get_address, get_birthday, get_email, get_name,
+                get_new_email, get_new_phone, get_old_email, get_old_phone,
+                get_phone, style)
 
 
 def input_error(func):
@@ -17,22 +19,6 @@ def input_error(func):
             match func.__name__:
                 case "parse_input":
                     print("Command can not be blank")
-                case "add_contact":
-                    print("Usage: add contact NAME PHONE_NUMBER")
-                case "add_email":
-                    print("Usage: add email NAME EMAIL")
-                case "change_phone":
-                    print("Usage: change NAME OLD_NUMBER NEW_NUMBER")
-                case "change_email":
-                    print("Usage: change email NAME OLD_EMAIL NEW_EMAIL")
-                case "show_phone":
-                    print("Usage: phone NAME")
-                case "add_birthday":
-                    print("Usage: add birthday NAME DATE(DD.MM.YYYY)")
-                case "show_birthday":
-                    print("Usage: show birthday NAME")
-                case "set_address":
-                    print("Usage: set address NAME ADDRESS")
                 case _:
                     print(f"error in {func.__name__}")
         except PhoneFormatError:
@@ -59,56 +45,57 @@ def parse_input(user_input):
     return command, *args
 
 
-@input_error
-def add_contact(args, book: AddressBook):
-    name, phone = args
-    existing_record = book.find(name)
+def add_contact(book: AddressBook, session: PromptSession):
+    name = get_name(session)
+    phone = get_phone(session)
+    email = get_email(session)
+    birthday = get_birthday(session)
+    address = get_address(session)
 
-    if existing_record:
-        if existing_record.add_phone(phone):
-            print("Phone number added to existing contact.")
-            draw_record(existing_record.get_info())
-        else:
-            return "Phone number already exists."
-    else:
+    record = book.find(name)
+    if not record:
         record = Record(name)
-        record.add_phone(phone)
         book.add_record(record)
-        print("New contact added.")
+
+    if phone:
+        record.add_phone(phone)
+    if email:
+        record.add_email(email)
+    if birthday:
+        record.add_birthday(birthday)
+    if address:
+        record.set_address(address)
+
+    print("\n✅ Contact saved.")
+    draw_record(record.get_info())
+
+
+def change_phone(book: AddressBook, session: PromptSession):
+    name = get_name(session)
+    old_phone = get_old_phone(session)
+    new_phone = get_new_phone(session)
+    record = book.find(name)
+    if record and record.edit_phone(old_phone, new_phone):
+        print("\n✅ Phone updated.")
         draw_record(record.get_info())
-
-
-@input_error
-def change_phone(args, book: AddressBook):
-    name, old_phone, new_phone = args
-    record = book.find(name)
-    if record is None:
-        print("Contact does not exist.")
     else:
-        if record.edit_phone(old_phone, new_phone):
-            print("Contact updated.")
-            draw_record(record.get_info())
-        else:
-            print("Old phone number not found")
+        print("[!] Contact or phone not found.")
 
 
-@input_error
-def change_email(args, book: AddressBook):
-    name, old_email, new_email = args
+def change_email(book: AddressBook, session: PromptSession):
+    name = get_name(session)
+    old_email = get_old_email(session)
+    new_email = get_new_email(session)
     record = book.find(name)
-    if record is None:
-        print("Contact does not exist.")
+    if record and record.edit_email(old_email, new_email):
+        print("\n✅ Email updated.")
+        draw_record(record.get_info())
     else:
-        if record.edit_email(old_email, new_email):
-            print("Contact updated.")
-            draw_record(record.get_info())
-        else:
-            print("Old email number not found")
+        print("[!] Contact or email not found.")
 
 
-@input_error
-def show_phone(args, book: AddressBook):
-    name = args[0]
+def show_phone(book: AddressBook, session: PromptSession):
+    name = get_name(session)
     record = book.find(name)
     if record:
         draw_record(record.get_info())
@@ -116,22 +103,16 @@ def show_phone(args, book: AddressBook):
         print("Contact not found")
 
 
-@input_error
-def add_email(args, book: AddressBook):
-    name, email = args
-    existing_record = book.find(name)
-
-    if existing_record:
-        if existing_record.add_email(email):
-            print("Email added to existing contact.")
-            draw_record(existing_record.get_info())
-        else:
-            return "Email already exists."
-    else:
+def add_email(book: AddressBook, session: PromptSession):
+    name = get_name(session)
+    email = get_email(session)
+    record = book.find(name)
+    if not record:
         record = Record(name)
-        record.add_email(email)
         book.add_record(record)
-        print("New contact added.")
+    if email:
+        record.add_email(email)
+        print("\n✅ Email added.")
         draw_record(record.get_info())
 
 
@@ -141,42 +122,42 @@ def show_all(book: AddressBook):
     return draw_contacts(contacts=book.get_all_records())
 
 
-@input_error
-def add_birthday(args, book: AddressBook):
-    name, b_date = args
+def add_birthday(book: AddressBook, session: PromptSession):
+    name = get_name(session)
+    birthday = get_birthday(session)
     record = book.find(name)
     if record:
-        record.add_birthday(b_date)
+        record.add_birthday(birthday)
+        print("\n✅ Birthday added.")
         draw_record(record.get_info())
     else:
         print("Contact not found")
 
 
-@input_error
-def set_address(args, book: AddressBook):
-    name, *address_parts = args
-    address = " ".join(address_parts)
+def set_address(book: AddressBook, session: PromptSession):
+    name = get_name(session)
+    address = get_address(session)
     record = book.find(name)
     if record:
         record.set_address(address)
+        print("\n✅ Address set.")
         draw_record(record.get_info())
     else:
         print("Contact not found")
 
 
-@input_error
-def show_birthday(args, book: AddressBook):
-    name = args[0]
+def show_birthday(book: AddressBook, session: PromptSession):
+    name = get_name(session)
     record = book.find(name)
     if record:
         if record.birthday:
-            return str(record.birthday)
+            print(record.birthday)
         else:
-            return "Birthday not set"
-    return "Contact not found"
+            print("Birthday not set")
+    else:
+        print("Contact not found")
 
 
-@input_error
 def show_birthdays_next_week(book: AddressBook):
     birthdays = book.get_upcoming_birthday()
     if birthdays:
@@ -186,8 +167,9 @@ def show_birthdays_next_week(book: AddressBook):
                 f"Name: {person['name']}, "
                 f"Congratulation date: {person['congratulation_date']}\n"
             )
-        return text.strip()
-    return "Birthdays not found"
+        print(text.strip())
+    else:
+        print("Birthdays not found")
 
 
 def main():
@@ -196,50 +178,47 @@ def main():
     session = PromptSession(
         completer=autocomplete, complete_while_typing=True, style=style
     )
-    print("Welcome to AddressBook!")
-    while True:
-        try:
+    print("Welcome to Personal Helper")
+    try:
+        while True:
             user_input = session.prompt(
                 [("class:prompt", ">>> ")], bottom_toolbar=bottom_toolbar
             )
-        except KeyboardInterrupt:
-            print("Ctrl+c")
-            break
-        if not (parsed_user_input := parse_input(user_input)):
-            continue
-        command, *args = parsed_user_input
+            if not (parsed_user_input := parse_input(user_input)):
+                continue
+            command, *args = parsed_user_input
 
-        match command:
-            case "exit" | "quit":
-                break
-            case "hello":
-                print("How can I help you?")
-            case "add contact":
-                add_contact(args, book)
-            case "add email":
-                add_email(args, book)
-            case "all contacts":
-                show_all(book)
-            case "add birthday":
-                add_birthday(args, book)
-            case "set address":
-                set_address(args, book)
-            case "show birthday":
-                if message := show_birthday(args, book):
-                    print(message)
-            case "show birthdays":
-                if message := show_birthdays_next_week(book):
-                    print(message)
-            case "change phone":
-                change_phone(args, book)
-            case "change email":
-                change_email(args, book)
-            case "show phone":
-                show_phone(args, book)
-            case _:
-                print("Invalid command.")
+            match command:
+                case "exit" | "quit":
+                    break
+                case "hello":
+                    print("How can I help you?")
+                case "add contact":
+                    add_contact(book, session)
+                case "add email":
+                    add_email(book, session)
+                case "all contacts":
+                    show_all(book)
+                case "add birthday":
+                    add_birthday(book, session)
+                case "set address":
+                    set_address(book, session)
+                case "show birthday":
+                    show_birthday(book, session)
+                case "show birthdays":
+                    show_birthdays_next_week(book)
+                case "change phone":
+                    change_phone(book, session)
+                case "change email":
+                    change_email(book, session)
+                case "show phone":
+                    show_phone(book, session)
+                case _:
+                    print("Invalid command.")
+    except KeyboardInterrupt:
+        print("\n[✋] Interrupted by user (Ctrl+C)")
     book.save()
-    print("📁 Address book saved. Bye!")
+    print("\n📁 Address book saved. Bye!")
 
 
 if __name__ == "__main__":
