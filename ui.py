@@ -12,7 +12,7 @@ from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
 
 
 def validated_prompt(label: str, validator=None, optional=False):
-    def wrapper(session: PromptSession):
+    def wrapper():
         while True:
             try:
                 value = PromptSession(completer=None).prompt(f"🔹 {label}: ").strip()
