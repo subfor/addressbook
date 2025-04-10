@@ -1,12 +1,13 @@
-from functools import wraps
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from rich.theme import Theme
+
 from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
-                         PhoneFormatError, Record, Comment)
+                         PhoneFormatError, Record)
 
 # Validating input
 def validated_prompt(label: str, validator=None, optional=False):
@@ -80,11 +81,14 @@ style = Style.from_dict({
     "scrollbar.background": "bg:#3a3a3a",
     "scrollbar.button": "bg:#5f5f5f",
     "bottom-toolbar": "italic #888888",
+})
+
+theme = Theme({
     "address": "bold #00ff00",  # Пример корректного цвета для address
     "comment": "italic #20b2aa",  # стиль для комментариев
 })
 
-console = Console()
+console = Console(theme=theme)
 
 def bottom_toolbar() -> list:
     return [
