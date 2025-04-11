@@ -4,13 +4,14 @@ from prompt_toolkit import PromptSession
 
 from addressbook import (AddressBook, DateFormatError, EmailFormatError,
                          PhoneFormatError)
-from commands import (add_birthday, add_contact, add_email, add_note_function,
-                      change_email, change_phone, edit_note_function,
-                      remove_note_function, search_notes_function, set_address,
-                      show_all, show_all_notes_function, show_birthday,
-                      show_birthdays, show_phone)
-from notes import NotesManager
-from ui import autocomplete, bottom_toolbar, draw_header, style
+from ui import (autocomplete, bottom_toolbar, draw_header, style)
+
+from commands import add_contact, add_email, show_all, add_birthday, set_address, show_birthday, \
+    show_birthdays, change_phone, change_email, show_phone
+    
+from commands import add_note_function, edit_note_function, remove_note_function, search_notes_function, show_all_notes_function
+
+
 
 
 def input_error(func):
@@ -47,14 +48,12 @@ def parse_input(user_input):
         args = []
     return command, *args
 
-
 def main():
     draw_header()
     book = AddressBook.load()
     session = PromptSession(
         completer=autocomplete, complete_while_typing=True, style=style
     )
-    notes = NotesManager.load()
     print("Welcome to Personal Helper")
     try:
         while True:
@@ -95,21 +94,20 @@ def main():
                 case "show phone":
                     show_phone(book)
                 case "add note":
-                    add_note_function(notes)
+                    input_error(add_note_function)()
                 case "edit note":
-                    edit_note_function(notes)
+                    input_error(edit_note_function)()
                 case "remove note":
-                    remove_note_function(notes)
+                    input_error(remove_note_function)()
                 case "search notes":
-                    search_notes_function(notes)
+                    input_error(search_notes_function)()
                 case "show notes":
-                    show_all_notes_function(notes)  # ⬅ вот это вставляешь сюда
+                    input_error(show_all_notes_function)()  # ⬅ вот это вставляешь сюда
                 case _:
                     print("Invalid command.")
     except KeyboardInterrupt:
         print("\n[✋] Interrupted by user (Ctrl+C)")
     book.save()
-    notes.save()
     print("\n📁 Address book saved. Bye!")
 
 

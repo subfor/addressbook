@@ -10,7 +10,6 @@ from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
 
 # Validete input
 
-
 def validated_prompt(label: str, validator=None, optional=False):
     def wrapper():
         while True:
@@ -35,7 +34,6 @@ def validated_prompt(label: str, validator=None, optional=False):
                 print("[!] Invalid input. Try again.")
 
     return wrapper
-
 
 # Input functions
 
@@ -79,14 +77,12 @@ COMMANDS = [
     "show notes",
 ]
 
-
 class CommandCompleter(WordCompleter):
     def get_completions(self, document, complete_event):
         text = document.text_before_cursor.strip().lower()
         if " " in text:
             return
         yield from super().get_completions(document, complete_event)
-
 
 autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
@@ -104,15 +100,12 @@ style = Style.from_dict(
 
 console = Console()
 
-
 def bottom_toolbar() -> list:
     return [
         ("class:bottom-toolbar", " 🧠 Tab — autocomplete | Ctrl+C or exit/quit — exit")
     ]
 
-
 # Header
-
 
 def draw_header() -> None:
     table = Table.grid(expand=True)
@@ -140,14 +133,13 @@ def draw_header() -> None:
         "[bold cyan]birthdays[/bold cyan]",
         "[bold cyan]exit / quit[/bold cyan]",
     )
-
     table.add_row(
         "[bold cyan]edit note[/bold cyan]",
         "[bold cyan]remove note[/bold cyan]",
         "[bold cyan]search notes[/bold cyan]",
     )
     table.add_row(
-        "[bold cyan]show notes[/bold cyan]",
+        "[bold cyan]show all notes[/bold cyan]",
         "",
         "",
     )
@@ -162,9 +154,7 @@ def draw_header() -> None:
 
     console.print(panel)
 
-
 # Formatted output
-
 
 def draw_contacts(contacts: list) -> None:
     table = Table(title="Found contacts")
@@ -177,14 +167,13 @@ def draw_contacts(contacts: list) -> None:
         table.add_row(*contact)
     console.print(table)
 
-
 def draw_record(record: list) -> None:
     name, phones, b_day, emails, address = record
     table = Table.grid(padding=(0, 2))
     table.add_column(style="bold cyan", justify="left")
     table.add_column(style="white", overflow="fold")
 
-    table.add_row("📱 Phones:", phones)
+    table.add_row(" Phones:", phones)
     table.add_row("🎂 Birthday:", b_day)
     table.add_row("📧 Emails:", emails)
     table.add_row("🏠 Address:", address)
@@ -197,7 +186,6 @@ def draw_record(record: list) -> None:
         expand=False,
     )
     console.print(panel)
-
 
 def draw_single_note(note) -> None:
     table = Table.grid(padding=(0, 2))
@@ -219,11 +207,10 @@ def draw_single_note(note) -> None:
     )
 
     console.print(panel)
-    console.rule(style="grey39")
 
 
 def draw_notes(notes: list) -> None:
-    table = Table(title="🗂 All Notes")
+    table = Table(title="📂 All Notes")
 
     table.add_column("📝 Title", style="bold cyan", no_wrap=True)
     table.add_column("🗒 Content", style="white")
@@ -242,4 +229,3 @@ def draw_notes(notes: list) -> None:
         )
 
     console.print(table)
-    console.rule(style="grey39")
