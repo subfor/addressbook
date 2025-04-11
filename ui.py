@@ -35,6 +35,7 @@ def validated_prompt(label: str, validator=None, optional=False):
 
     return wrapper
 
+
 # Input functions
 
 get_name = validated_prompt("Enter name", validator=Record.validate_name)
@@ -86,6 +87,8 @@ class CommandCompleter(WordCompleter):
 
 autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
+autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
+
 style = Style.from_dict(
     {
         "prompt": "bold #00ffcc",
@@ -107,6 +110,7 @@ def bottom_toolbar() -> list:
 
 # Header
 
+
 def draw_header() -> None:
     table = Table.grid(expand=True)
     table.add_column(justify="left", ratio=1)
@@ -117,6 +121,7 @@ def draw_header() -> None:
         "[bold cyan]add contact[/bold cyan]",
         "[bold cyan]add birthday[/bold cyan]",
         "[bold cyan]add note[/bold cyan]",
+
     )
     table.add_row(
         "[bold cyan]change phone[/bold cyan]",
@@ -142,6 +147,7 @@ def draw_header() -> None:
         "[bold cyan]show all notes[/bold cyan]",
         "",
         "",
+
     )
 
     panel = Panel(
@@ -155,6 +161,7 @@ def draw_header() -> None:
     console.print(panel)
 
 # Formatted output
+
 
 def draw_contacts(contacts: list) -> None:
     table = Table(title="Found contacts")

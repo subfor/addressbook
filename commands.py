@@ -1,3 +1,4 @@
+
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
 
@@ -6,6 +7,7 @@ from notes import Note, NotesManager
 from ui import (draw_contacts, draw_record, draw_single_note, get_address,
                 get_birthday, get_email, get_name, get_new_email,
                 get_new_phone, get_old_email, get_old_phone, get_phone)
+
 
 
 def add_contact(book: AddressBook):
@@ -199,3 +201,4 @@ def show_all_notes_function(notes_manager: NotesManager):
         notes_manager.display_notes(notes)
     else:
         print("[!] No notes found.")
+
