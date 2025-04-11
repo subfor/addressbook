@@ -127,36 +127,12 @@ def draw_header() -> None:
     table.add_column(justify="left", ratio=1)
     table.add_column(justify="left", ratio=1)
 
-    table.add_row(
-        "[bold cyan]add contact[/bold cyan]",
-        "[bold cyan]add birthday[/bold cyan]",
-        "[bold cyan]add note[/bold cyan]",
-    )
-    table.add_row(
-        "[bold cyan]change phone[/bold cyan]",
-        "[bold cyan]show phone[/bold cyan]",
-        "[bold cyan]show birthday[/bold cyan]",
-    )
-    table.add_row(
-        "[bold cyan]add email[/bold cyan]",
-        "[bold cyan]change email[/bold cyan]",
-        "[bold cyan]set address[/bold cyan]",
-    )
-    table.add_row(
-        "[bold cyan]all contacts[/bold cyan]",
-        "[bold cyan]birthdays[/bold cyan]",
-        "[bold cyan]exit / quit[/bold cyan]",
-    )
-    table.add_row(
-        "[bold cyan]edit note[/bold cyan]",
-        "[bold cyan]remove note[/bold cyan]",
-        "[bold cyan]search notes[/bold cyan]",
-    )
-    table.add_row(
-        "[bold cyan]show all notes[/bold cyan]",
-        "",
-        "",
-    )
+    for i in range(0, len(COMMANDS) // 3 + (1 if len(COMMANDS) % 3 != 0 else 0)):
+        table.add_row(
+            f"[bold cyan]{COMMANDS[i * 3]}[/bold cyan]",
+            "" if i * 3 + 2 > len(COMMANDS) else f"[bold cyan]{COMMANDS[i * 3 + 1]}[/bold cyan]",
+            "" if i * 3 + 3 > len(COMMANDS) else f"[bold cyan]{COMMANDS[i * 3 + 2]}[/bold cyan]",
+        )
 
     panel = Panel(
         table,
