@@ -140,7 +140,7 @@ def draw_header() -> None:
         "[bold cyan]birthdays[/bold cyan]",
         "[bold cyan]exit / quit[/bold cyan]",
     )
-    
+
     table.add_row(
         "[bold cyan]edit note[/bold cyan]",
         "[bold cyan]remove note[/bold cyan]",
@@ -198,6 +198,7 @@ def draw_record(record: list) -> None:
     )
     console.print(panel)
 
+
 def draw_single_note(note) -> None:
     table = Table.grid(padding=(0, 2))
     table.add_column(justify="left", style="bold cyan")
@@ -219,7 +220,8 @@ def draw_single_note(note) -> None:
 
     console.print(panel)
     console.rule(style="grey39")
-    
+
+
 def draw_notes(notes: list) -> None:
     table = Table(title="🗂 All Notes")
 

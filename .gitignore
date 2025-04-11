@@ -2,11 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+test_.py
 # C extensions
 *.so
 #AddressBook
 *.pkl
+.DS_Store
 # Distribution / packaging
 .Python
 build/

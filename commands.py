@@ -1,12 +1,12 @@
-from addressbook import Record, AddressBook
-from ui import get_phone, get_email, get_name, get_birthday, get_address, get_old_phone, get_new_phone, get_new_email, \
-    get_old_email, draw_record, draw_contacts
-    
-from ui import draw_notes, draw_single_note
+from addressbook import AddressBook, Record
 from notes import Note, NotesManager
+from ui import (draw_contacts, draw_notes, draw_record, draw_single_note,
+                get_address, get_birthday, get_email, get_name, get_new_email,
+                get_new_phone, get_old_email, get_old_phone, get_phone)
 
-notes_manager = NotesManager()
-    
+#
+# notes_manager = NotesManager()
+
 
 def add_contact(book: AddressBook):
     name = get_name()
@@ -134,55 +134,65 @@ def show_birthdays(book: AddressBook):
     else:
         print("Birthdays not found")
 
-def add_note_function():
+
+def add_note_function(notes_manager: NotesManager):
     title = input("Enter note title: ")
     content = input("Enter note content: ")
-    tags = [tag.strip() for tag in input("Enter tags (comma separated): ").split(",") if tag.strip()]
+    tags = [
+        tag.strip()
+        for tag in input("Enter tags (comma separated): ").split(",")
+        if tag.strip()
+    ]
     note = Note(title, content, tags)
     notes_manager.notes.append(note)
     print("\n✅ Note added.")
-    draw_single_note(note)  
-    
-def edit_note_function():
+    draw_single_note(note)
+
+
+def edit_note_function(notes_manager: NotesManager):
     title = input("Enter the title of the note you want to edit: ")
     note = notes_manager.find_note_by_title(title)
     if note:
         new_title = input(f"Enter new title (current: {note.title}): ")
         new_content = input(f"Enter new content (current: {note.content}): ")
-        new_tags = input(f"Enter new tags (current: {', '.join(note.tags)}): ").split(",")
+        new_tags = input(f"Enter new tags (current: {', '.join(note.tags)}): ").split(
+            ","
+        )
         notes_manager.edit_note(note, new_title, new_content, new_tags)
-        draw_single_note(note)  
+        draw_single_note(note)
     else:
         print("[!] Note not found.")
-        
-def remove_note_function():
+
+
+def remove_note_function(notes_manager: NotesManager):
     title = input("Enter the title of the note you want to remove: ")
     note = notes_manager.find_note_by_title(title)
     if note:
-        notes_manager.remove_note(note) 
+        notes_manager.remove_note(note)
         print("\n✅ Note removed.")
     else:
         print("[!] Note not found.")
-        
-def search_notes_function():
+
+
+def search_notes_function(notes_manager: NotesManager):
     search_term = input("Enter the title or tag to search for: ")
-    
-  
+
     if len(search_term.split()) == 1:
         notes = notes_manager.search_notes_by_title(search_term)
         if notes:
             draw_notes(notes)
         else:
             print("[!] No notes found by title.")
-    
+
     else:
         notes = notes_manager.search_notes_by_tags(search_term)
         if notes:
             draw_notes(notes)
         else:
             print("[!] No notes found by tag.")
-        
-def show_all_notes_function():
+
+
+def show_all_notes_function(notes_manager: NotesManager):
     notes = notes_manager.get_all_notes()
     if notes:
         draw_notes(notes)
