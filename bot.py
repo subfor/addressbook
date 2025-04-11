@@ -4,7 +4,6 @@ from prompt_toolkit import PromptSession
 
 from addressbook import (AddressBook, DateFormatError, EmailFormatError,
                          PhoneFormatError)
-
 from commands import (add_birthday, add_contact, add_email, add_note_function,
                       change_email, change_phone, edit_note_function,
                       remove_note_function, search_notes_function, set_address,
@@ -12,7 +11,6 @@ from commands import (add_birthday, add_contact, add_email, add_note_function,
                       show_birthdays, show_phone)
 from notes import NotesManager
 from ui import autocomplete, bottom_toolbar, draw_header, style
-
 
 
 def input_error(func):
@@ -48,7 +46,6 @@ def parse_input(user_input):
         command = parts[0]
         args = []
     return command, *args
-
 
 
 def main():
@@ -97,7 +94,6 @@ def main():
                     change_email(book)
                 case "show phone":
                     show_phone(book)
-
                 case "add note":
                     add_note_function(notes_manager)
                 case "edit note":
