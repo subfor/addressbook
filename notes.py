@@ -1,5 +1,7 @@
-from typing import List, Optional
+import pickle
 from datetime import datetime
+from typing import List, Optional
+
 
 class Note:
     def __init__(self, title: str, content: str, tags: Optional[List[str]] = None):
@@ -23,6 +25,7 @@ class Note:
             self.tags.remove(tag)
             self.updated_at = datetime.now()
 
+
 class NotesManager:
     def __init__(self):
         self.notes = []
@@ -31,15 +34,19 @@ class NotesManager:
         note = Note(title, content, tags)
         self.notes.append(note)
         print("\n✅ Note added.")
-        
-    def get_all_notes(self): 
+
+    def get_all_notes(self):
         return self.notes
 
-    def search_notes_by_title(self, term): 
+    def search_notes_by_title(self, term):
         return [note for note in self.notes if term.lower() in note.title.lower()]
 
-    def search_notes_by_tags(self, term): 
-        return [note for note in self.notes if any(term.lower() in tag.lower() for tag in note.tags)]
+    def search_notes_by_tags(self, term):
+        return [
+            note
+            for note in self.notes
+            if any(term.lower() in tag.lower() for tag in note.tags)
+        ]
 
     def show_all_notes(self):
         return self.get_all_notes()
@@ -54,11 +61,13 @@ class NotesManager:
     def find_note_by_title(self, title: str):
         """Find a note by its title."""
         for note in self.notes:
-            if note.title.lower() == title.lower(): 
+            if note.title.lower() == title.lower():
                 return note
-        return None 
-    
-    def edit_note(self, note: Note, new_title: str, new_content: str, new_tags: List[str]):
+        return None
+
+    def edit_note(
+        self, note: Note, new_title: str, new_content: str, new_tags: List[str]
+    ):
         note.title = new_title
         note.content = new_content
         note.tags = new_tags
@@ -66,5 +75,19 @@ class NotesManager:
         print(f"\n✅ Note '{note.title}' updated.")
 
     def display_notes(self, notes: List[Note]):
-        from ui import draw_notes  
+        from ui import draw_notes
+
         draw_notes(notes)
+
+    def save(self, filename="notes.pkl") -> None:
+        with open(filename, "wb") as f:
+            pickle.dump(self, f)
+
+    @staticmethod
+    def load(filename: str = "notes.pkl") -> "NotesManager":
+        try:
+            with open(filename, "rb") as f:
+                return pickle.load(f)
+        except (FileNotFoundError, EOFError, pickle.UnpicklingError):
+            print("⚠️ Notes not found, created new.")
+            return NotesManager()
