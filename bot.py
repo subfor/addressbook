@@ -4,10 +4,13 @@ from prompt_toolkit import PromptSession
 
 from addressbook import (AddressBook, DateFormatError, EmailFormatError,
                          PhoneFormatError)
-from ui import (autocomplete, bottom_toolbar, draw_header, style)
-
-from commands import add_contact, add_email, show_all, add_birthday, set_address, show_birthday, \
-    show_birthdays, change_phone, change_email, show_phone
+from commands import (add_birthday, add_contact, add_email, add_note_function,
+                      change_email, change_phone, edit_note_function,
+                      remove_note_function, search_notes_function, set_address,
+                      show_all, show_all_notes_function, show_birthday,
+                      show_birthdays, show_phone)
+from notes import NotesManager
+from ui import autocomplete, bottom_toolbar, draw_header, style
 
 
 def input_error(func):
@@ -44,9 +47,11 @@ def parse_input(user_input):
         args = []
     return command, *args
 
+
 def main():
     draw_header()
     book = AddressBook.load()
+    notes_manager = NotesManager.load()
     session = PromptSession(
         completer=autocomplete, complete_while_typing=True, style=style
     )
@@ -89,10 +94,22 @@ def main():
                     change_email(book)
                 case "show phone":
                     show_phone(book)
+                case "add note":
+                    add_note_function(notes_manager)
+                case "edit note":
+                    edit_note_function(notes_manager)
+                case "remove note":
+                    remove_note_function(notes_manager)
+                case "search notes":
+                    search_notes_function(notes_manager)
+                case "show notes":
+                    show_all_notes_function(notes_manager)
+
                 case _:
                     print("Invalid command.")
     except KeyboardInterrupt:
         print("\n[✋] Interrupted by user (Ctrl+C)")
+    notes_manager.save()
     book.save()
     print("\n📁 Address book saved. Bye!")
 
