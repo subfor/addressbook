@@ -6,7 +6,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
-                         PhoneFormatError, Record)
+                         PhoneFormatError, Record, RangeFormatError)
 
 # Validete input
 
@@ -26,6 +26,8 @@ def validated_prompt(label: str, validator=None, completer=None, optional=False)
                 return value
             except KeyboardInterrupt:
                 raise
+            except RangeFormatError as e:
+                print(f"[!] {e.message}")
             except NameFormatError:
                 print("[!] Name cannot be blank")
             except PhoneFormatError:
@@ -45,6 +47,7 @@ def validated_prompt(label: str, validator=None, completer=None, optional=False)
 
 # Input functions
 
+get_birthday_range = validated_prompt("Enter range to look for birthdays", validator=Record.validate_name)
 get_name = validated_prompt("Enter name", validator=Record.validate_name)
 get_phone = validated_prompt("Enter phone", validator=Record.validate_phone)
 get_email = validated_prompt(
@@ -93,8 +96,6 @@ class CommandCompleter(WordCompleter):
         if " " in text:
             return
         yield from super().get_completions(document, complete_event)
-
-autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
 autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 

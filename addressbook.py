@@ -2,10 +2,14 @@ import pickle
 import re
 from collections import UserDict
 from datetime import datetime, timedelta
+from warnings import catch_warnings
 from typing import Optional
 
 from email_validator import EmailNotValidError, validate_email
 
+class RangeFormatError(Exception):
+    def __init__(self, message):
+        self.message = message
 
 class NameFormatError(Exception):
     pass
@@ -197,6 +201,15 @@ class Record:
         )
 
     @staticmethod
+    def validate_range(range_str: str):
+        try:
+            rang_int = int(range_str)
+        except ValueError as e:
+            raise RangeFormatError('Range must be a positive integer between 7 and 365') from e
+        if rang_int < 7 or rang_int > 365:
+            raise RangeFormatError('Range must be a positive integer between 7 and 365')
+
+    @staticmethod
     def validate_name(name: str):
         Name(name)
 
@@ -241,10 +254,9 @@ class AddressBook(UserDict):
         except KeyError:
             return False
 
-    def get_upcoming_birthday(self) -> list:
+    def get_upcoming_birthday(self, limit=7) -> list:
         today_date = datetime.today().date()
         congrat_list = []
-        congrats_date = None
 
         for record in self.data.values():
             if not record.birthday:
@@ -260,7 +272,7 @@ class AddressBook(UserDict):
 
             days_until_birthday = (birthday_this_year - today_date).days
 
-            if 0 <= days_until_birthday < 7:
+            if 0 <= days_until_birthday < limit:
                 congrats_date = birthday_this_year + timedelta(
                     days=self.__check_weekend(birthday_this_year)
                 )
@@ -268,6 +280,7 @@ class AddressBook(UserDict):
                 congrat_list.append(
                     {
                         "name": record.name.value,
+                        "birthday": record.birthday.value,
                         "congratulation_date": congrats_date.strftime("%d.%m.%Y"),
                     }
                 )

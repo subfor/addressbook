@@ -3,11 +3,12 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.shortcuts import yes_no_dialog, input_dialog
 from prompt_toolkit.validation import Validator
 
-
-from addressbook import AddressBook, Record, Email, Phone, Birthday
 from notes import Note, NotesManager
+
+from addressbook import Record, AddressBook, Email, Phone, Birthday
+
 from ui import (draw_contacts, draw_record, draw_single_note, get_address,
-                get_birthday, get_email, get_name, get_new_email,
+                get_birthday, get_email, get_name, get_new_email, get_birthday_range,
                 get_new_phone, get_old_email, get_old_phone, get_phone, get_term)
 
 
@@ -225,13 +226,17 @@ def show_birthday(book: AddressBook):
 
 
 def show_birthdays(book: AddressBook):
-    birthdays = book.get_upcoming_birthday()
+    range_int = int(get_birthday_range())
+
+    birthdays = book.get_upcoming_birthday(limit=range_int)
+
     if birthdays:
         text = ""
         for person in birthdays:
             text += (
                 f"Name: {person['name']}, "
-                f"Congratulation date: {person['congratulation_date']}\n"
+                f"Birthday: {person['birthday']}, "
+                f"Congratulation date: {person['congratulation_date']}"
             )
         print(text.strip())
     else:
