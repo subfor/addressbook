@@ -2,26 +2,26 @@ import pickle
 import re
 from collections import UserDict
 from datetime import datetime, timedelta
-from email_validator import EmailNotValidError, validate_email
-from typing import Optional, List  # Импортируем Optional и List
 
-# Custom exceptions
+from email_validator import EmailNotValidError, validate_email
+
+
 class NameFormatError(Exception):
     pass
+
 
 class PhoneFormatError(Exception):
     pass
 
+
 class DateFormatError(Exception):
     pass
+
 
 class EmailFormatError(Exception):
     pass
 
-class AddressFormatError(Exception):
-    pass
 
-# Base class for fields (Name, Phone, Birthday, Email, Address)
 class Field:
     def __init__(self, value):
         self.value = value
@@ -29,27 +29,27 @@ class Field:
     def __str__(self):
         return str(self.value)
 
-# Name class for handling name formatting
+
 class Name(Field):
     def __init__(self, name: str):
         if name:
             super().__init__(name.strip().capitalize())
         else:
-            raise NameFormatError("[!] Name cannot be blank")
+            raise NameFormatError("[!]Name cannot be blank")
 
-# Phone class with validation for 10-digit phone numbers
+
 class Phone(Field):
     def __init__(self, phone: str):
         if self.__validate_phone(phone):
             super().__init__(phone)
         else:
-            raise PhoneFormatError(f"[!] Wrong phone format: {phone}")
+            raise PhoneFormatError(f"[!]Wrong phone format {phone}")
 
     def __validate_phone(self, value: str) -> bool:
         pattern = re.compile(r"^\d{10}$")
         return bool(pattern.match(value))
 
-# Birthday class with validation for date format
+
 class Birthday(Field):
     def __init__(self, value):
         if self.__validate_date(value):
@@ -65,7 +65,7 @@ class Birthday(Field):
     def __str__(self):
         return f"Birthday: {self.value.strftime('%d.%m.%Y')}"
 
-# Email class with validation
+
 class Email(Field):
     def __init__(self, value):
         try:
@@ -77,68 +77,19 @@ class Email(Field):
     def __str__(self):
         return f"Email: {self.value}"
 
-# Address class for storing contact address
+
 class Address(Field):
     def __init__(self, value: str):
-        if value:
-            super().__init__(value.strip())  # Просто убираем лишние пробелы
-        else:
-            raise AddressFormatError("[!] Address cannot be blank.")
+        super().__init__(value.strip())
 
-# Comment class for handling comments related to contacts
-class Comment:
-    def __init__(self, content: str):
-        self.content = content
-        self.created_at = datetime.now()
 
-    def __str__(self):
-        return f"[{self.created_at.strftime('%d.%m.%Y %H:%M:%S')}] {self.content}"
-
-# ContactNote class for handling notes associated with contacts
-class ContactNote:
-    def __init__(self, title: str, content: str, tags: Optional[List[str]] = None):
-        self.title = title
-        self.content = content
-        self.tags = tags if tags else []  # Initialize as empty list if no tags provided
-        self.created_at = datetime.now()  # Creation date
-        self.updated_at = self.created_at  # Last update date
-
-    def add_tag(self, tag: str):
-        if tag not in self.tags:
-            self.tags.append(tag)
-            self.updated_at = datetime.now()
-
-    def remove_tag(self, tag: str):
-        if tag in self.tags:
-            self.tags.remove(tag)
-            self.updated_at = datetime.now()
-
-    def update_content(self, content: str):
-        self.content = content
-        self.updated_at = datetime.now()
-
-    def display(self) -> str:
-        return (
-            f"Note: {self.title} - {self.content}\n"
-            f"Created At: {self.created_at.strftime('%d.%m.%Y %H:%M:%S')}\n"
-            f"Updated At: {self.updated_at.strftime('%d.%m.%Y %H:%M:%S')}\n"
-        )
-
-# Record class for handling a contact's details
 class Record:
     def __init__(self, name: str):
         self.name = Name(name)
         self.phones = []
         self.birthday = None
         self.emails = []
-        self.address = None  # Добавляем атрибут для хранения адреса
-        self.comments = []  # Список для хранения комментариев
-        
-    def set_address(self, address: str) -> None:
-        self.address = Address(address)  # Создаём объект Address и присваиваем его атрибуту
-
-    def add_note(self, note: ContactNote) -> None:
-        self.comments.append(note)  # Добавляем заметку в контакт
+        self.address = None
 
     def add_phone(self, new_phone: str) -> bool:
         if self.__get_phone_index(new_phone) is None:
@@ -146,28 +97,62 @@ class Record:
             return True
         return False
 
+    def remove_phone(self, phone_number: str) -> bool:
+        index = self.__get_phone_index(phone_number)
+        if index is not None:
+            self.phones.pop(index)
+            return True
+        return False
+
+    def edit_phone(self, old_number: str, new_number: str) -> bool:
+        index = self.__get_phone_index(old_number)
+        if index is not None:
+            self.phones[index] = Phone(new_number)
+            return True
+        return False
+
+    def find_phone(self, phone_number: str) -> str:
+        return phone_number if self.__get_phone_index(phone_number) else ""
+
     def add_email(self, new_email: str) -> bool:
         if self.__get_email_index(new_email) is None:
             self.emails.append(Email(new_email))
             return True
         return False
 
+    def remove_email(self, email_address: str) -> bool:
+        index = self.__get_email_index(email_address)
+        if index is not None:
+            self.emails.pop(index)
+            return True
+        return False
+
+    def edit_email(self, old_email: str, new_email: str) -> bool:
+        index = self.__get_email_index(old_email)
+        if index is not None:
+            self.emails[index] = Email(new_email)
+            return True
+        return False
+
+    def find_email(self, email_address: str) -> str:
+        return email_address if self.__get_email_index(email_address) else ""
+
     def add_birthday(self, b_date: str) -> None:
         self.birthday = Birthday(b_date)
 
-    def add_comment(self, comment: Comment) -> None:
-        """Add a comment to the contact."""
-        self.comments.append(comment)
+    def set_address(self, address: str) -> None:
+        self.address = Address(address)
 
     def get_info(self) -> list:
         phones = "; ".join(p.value for p in self.phones) if self.phones else "-"
         birthday = (
-            self.birthday.value.strftime("%d.%m.%Y") if self.birthday else "-"
+            self.birthday.value.strftime("%d.%m.%Y")
+            if self.birthday is not None
+            else "-"
         )
         emails = ", ".join(e.value for e in self.emails) if self.emails else "-"
         address = self.address.value if self.address else "-"
-        comments = "; ".join(comment.content for comment in self.comments) if self.comments else "-"
-        return [self.name.value, phones, birthday, emails, address, comments]
+        return [self.name.value, phones, birthday, emails, address]
 
     def __get_phone_index(self, phone_number: str) -> int | None:
         for index, phone in enumerate(self.phones):
@@ -181,108 +166,111 @@ class Record:
                 return index
         return None
 
-    @staticmethod
-    def validate_name(name: str):
-        """Validate name format."""
-        if not name.strip():
-            raise NameFormatError("[!] Name cannot be blank.")
-        return True
-
-    @staticmethod
-    def validate_phone(phone: str):
-        """Validate phone number format."""
-        Phone(phone)
-        return True
-
-    @staticmethod
-    def validate_email(email: str):
-        """Validate email format."""
-        Email(email)
-        return True
-
-    @staticmethod
-    def validate_birthday(b_day: str):
-        """Validate birthday format."""
-        Birthday(b_day)
-        return True
-
-    @staticmethod
-    def validate_address(address: str):
-        """Validate address format."""
-        Address(address)
-        return True
-
     def __str__(self):
         phones = "; ".join(p.value for p in self.phones)
         birthday = (
             self.birthday.value.strftime("%d.%m.%Y")
-            if self.birthday else "not set"
+            if self.birthday is not None
+            else "not set"
         )
         emails = ", ".join(e.value for e in self.emails)
-        comments = "; ".join(comment.content for comment in self.comments)
-        address = self.address.value if self.address else "not set"
         return (
             f"Contact name: {self.name.value}, "
-            f"Phones: {phones}, "
+            f"phones: {phones}, "
             f"Birthday: {birthday}, "
-            f"Emails: {emails}, "
-            f"Address: {address}, "
-            f"Comments: {comments if self.comments else 'No comments'}"
+            f"Emails: {emails if self.emails else 'not set'}, "
+            f"Address: {self.address if self.address else 'not set'}"
         )
 
+    @staticmethod
+    def validate_name(name: str):
+        Name(name)
+
+    @staticmethod
+    def validate_phone(phone: str):
+        Phone(phone)
+
+    @staticmethod
+    def validate_email(email: str):
+        Email(email)
+
+    @staticmethod
+    def validate_birthday(b_day: str):
+        Birthday(b_day)
+
+
 class AddressBook(UserDict):
-    def __init__(self):
-        super().__init__()
-        self.notebook = []  # Список для хранения заметок
 
-    # Метод для добавления заметки
-    def add_note_to_notebook(self, note: ContactNote) -> None:
-        self.notebook.append(note)
+    def add_record(self, record: Record) -> None:
+        self.data[record.name.value] = record
 
-    def get_all_notes(self):
-        return self.notebook
-
-    def find(self, name: str) -> Optional[Record]:
+    def find(self, name: str) -> Record | None:
         return self.data.get(name.strip().capitalize())
+
+    def delete(self, name: str) -> bool:
+        try:
+            del self.data[name.strip().capitalize()]
+            return True
+        except KeyError:
+            return False
 
     def get_upcoming_birthday(self) -> list:
         today_date = datetime.today().date()
         congrat_list = []
+        congrats_date = None
+
         for record in self.data.values():
-            if record.birthday:
-                birthday_data_obj = record.birthday.value
-                birthday_this_year = birthday_data_obj.replace(year=today_date.year)
-                if birthday_this_year < today_date:
-                    birthday_this_year = birthday_this_year.replace(year=today_date.year + 1)
-                days_until_birthday = (birthday_this_year - today_date).days
-                if 0 <= days_until_birthday < 7:
-                    congrat_list.append({
+            if not record.birthday:
+                continue
+
+            birthday_data_obj = record.birthday.value
+            birthday_this_year = birthday_data_obj.replace(year=today_date.year)
+
+            if birthday_this_year < today_date:
+                birthday_this_year = birthday_this_year.replace(
+                    year=today_date.year + 1
+                )
+
+            days_until_birthday = (birthday_this_year - today_date).days
+
+            if 0 <= days_until_birthday < 7:
+                congrats_date = birthday_this_year + timedelta(
+                    days=self.__check_weekend(birthday_this_year)
+                )
+
+                congrat_list.append(
+                    {
                         "name": record.name.value,
-                        "congratulation_date": birthday_this_year.strftime("%d.%m.%Y"),
-                    })
+                        "congratulation_date": congrats_date.strftime("%d.%m.%Y"),
+                    }
+                )
+
         return congrat_list
 
     def get_all_records(self) -> list:
         return [record.get_info() for record in self.data.values()]
 
+    def __check_weekend(self, date: datetime.date) -> int:
+        match date.isoweekday():
+            case 6:
+                return 2
+            case 7:
+                return 1
+            case _:
+                return 0
+
     def save(self, filename="addressbook.pkl") -> None:
         with open(filename, "wb") as f:
-            pickle.dump(self.data, f)  # Сохраняем данные книги
+            pickle.dump(self, f)
 
     @staticmethod
-    def load(filename="addressbook.pkl") -> "AddressBook":
+    def load(filename: str = "addressbook.pkl") -> "AddressBook":
         try:
             with open(filename, "rb") as f:
-                data = pickle.load(f)
-                book = AddressBook()
-                book.data = data  # Загружаем данные в книгу
-                return book
-        except (FileNotFoundError, EOFError) as e:
-            print(f"⚠️ Error loading address book: {e}")
-            return AddressBook()  # Возвращаем пустую книгу в случае ошибки
-
-    def add_record(self, record: Record) -> None:
-        self.data[record.name.value] = record
+                return pickle.load(f)
+        except (FileNotFoundError, EOFError, pickle.UnpicklingError):
+            print("⚠️ Address Book not found, created new.")
+            return AddressBook()
 
     def __str__(self) -> str:
         return "\n".join(str(record) for record in self.data.values())
