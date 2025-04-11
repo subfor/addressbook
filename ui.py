@@ -81,8 +81,11 @@ COMMANDS = [
     "change phone",
     "change email",
     "show phone",
+    "edit note",
+    "remove note",
+    "search notes",
+    "show notes",
 ]
-
 
 class CommandCompleter(WordCompleter):
     def get_completions(self, document, complete_event):
@@ -91,6 +94,7 @@ class CommandCompleter(WordCompleter):
             return
         yield from super().get_completions(document, complete_event)
 
+autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
 autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
@@ -108,12 +112,10 @@ style = Style.from_dict(
 
 console = Console()
 
-
 def bottom_toolbar() -> list:
     return [
         ("class:bottom-toolbar", " 🧠 Tab — autocomplete | Ctrl+C or exit/quit — exit")
     ]
-
 
 # Header
 
@@ -144,6 +146,16 @@ def draw_header() -> None:
         "[bold cyan]birthdays[/bold cyan]",
         "[bold cyan]exit / quit[/bold cyan]",
     )
+    table.add_row(
+        "[bold cyan]edit note[/bold cyan]",
+        "[bold cyan]remove note[/bold cyan]",
+        "[bold cyan]search notes[/bold cyan]",
+    )
+    table.add_row(
+        "[bold cyan]show all notes[/bold cyan]",
+        "",
+        "",
+    )
 
     panel = Panel(
         table,
@@ -154,7 +166,6 @@ def draw_header() -> None:
     )
 
     console.print(panel)
-
 
 # Formatted output
 
@@ -170,14 +181,13 @@ def draw_contacts(contacts: list) -> None:
         table.add_row(*contact)
     console.print(table)
 
-
 def draw_record(record: list) -> None:
     name, phones, b_day, emails, address = record
     table = Table.grid(padding=(0, 2))
     table.add_column(style="bold cyan", justify="left")
     table.add_column(style="white", overflow="fold")
 
-    table.add_row("📱 Phones:", phones)
+    table.add_row(" Phones:", phones)
     table.add_row("🎂 Birthday:", b_day)
     table.add_row("📧 Emails:", emails)
     table.add_row("🏠 Address:", address)
@@ -190,3 +200,46 @@ def draw_record(record: list) -> None:
         expand=False,
     )
     console.print(panel)
+
+def draw_single_note(note) -> None:
+    table = Table.grid(padding=(0, 2))
+    table.add_column(justify="left", style="bold cyan")
+    table.add_column(justify="left", style="white")
+
+    table.add_row("📝 Title:", note.title)
+    table.add_row("🗒 Content:", note.content)
+    table.add_row("🏷 Tags:", ", ".join(note.tags) if note.tags else "—")
+    table.add_row("📅 Created:", note.created_at.strftime("%Y-%m-%d %H:%M"))
+    table.add_row("🕓 Updated:", note.updated_at.strftime("%Y-%m-%d %H:%M"))
+
+    panel = Panel(
+        table,
+        title=f"[bold magenta]{note.title}[/bold magenta]",
+        border_style="bright_magenta",
+        padding=(1, 2),
+        expand=False,
+    )
+
+    console.print(panel)
+
+
+def draw_notes(notes: list) -> None:
+    table = Table(title="📂 All Notes")
+
+    table.add_column("📝 Title", style="bold cyan", no_wrap=True)
+    table.add_column("🗒 Content", style="white")
+    table.add_column("🏷 Tags", style="magenta")
+    table.add_column("📅 Created", style="green")
+    table.add_column("🕓 Updated", style="green")
+
+    for note in notes:
+        tags = ", ".join(note.tags) if note.tags else "—"
+        table.add_row(
+            note.title,
+            note.content,
+            tags,
+            note.created_at.strftime("%Y-%m-%d %H:%M"),
+            note.updated_at.strftime("%Y-%m-%d %H:%M"),
+        )
+
+    console.print(table)
