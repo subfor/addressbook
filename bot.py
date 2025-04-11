@@ -1,6 +1,6 @@
 from functools import wraps
 
-from prompt_toolkit import PromptSession
+from prompt_toolkit import PromptSession, prompt
 
 from addressbook import (AddressBook, DateFormatError, EmailFormatError,
                          PhoneFormatError)
@@ -8,7 +8,7 @@ from commands import (add_birthday, add_contact, add_email, add_note_function,
                       change_email, change_phone, edit_note_function,
                       remove_note_function, search_notes_function, set_address,
                       show_all, show_all_notes_function, show_birthday,
-                      show_birthdays, show_phone)
+                      show_birthdays, show_phone, search_contacts, edit_contact)
 from notes import NotesManager
 from ui import autocomplete, bottom_toolbar, draw_header, style
 
@@ -58,8 +58,10 @@ def main():
     print("Welcome to Personal Helper")
     try:
         while True:
-            user_input = session.prompt(
-                [("class:prompt", ">>> ")], bottom_toolbar=bottom_toolbar
+            user_input = prompt(
+                [("class:prompt", ">>> ")], bottom_toolbar=bottom_toolbar,
+                completer=autocomplete, complete_while_typing=True, style=style,
+                validator=None,
             )
 
             parsed_user_input = parse_input(user_input)
@@ -82,6 +84,8 @@ def main():
                     show_all(book)
                 case "add birthday":
                     add_birthday(book)
+                case "edit contact":
+                    edit_contact(book)
                 case "set address":
                     set_address(book)
                 case "show birthday":
@@ -94,6 +98,8 @@ def main():
                     change_email(book)
                 case "show phone":
                     show_phone(book)
+                case "search contacts":
+                    search_contacts(book)
                 case "add note":
                     add_note_function(notes_manager)
                 case "edit note":
