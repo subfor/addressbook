@@ -162,7 +162,11 @@ def delete_contact(book: AddressBook):
 
     should_delete = get_confirm("Are you sure you want to delete this contact (yes/no)?")
 
-    if should_delete != 'yes':
+    if should_delete is None:
+        print('[!] Aborted')
+        return
+
+    if not should_delete:
         return
 
     book.delete(name)
