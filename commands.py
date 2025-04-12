@@ -160,7 +160,7 @@ def delete_contact(book: AddressBook):
 
     draw_record(record.get_info())
 
-    should_delete = get_confirm("Are you sure you want to delete this contact (yes/no)?")
+    should_delete = get_confirm("Are you sure you want to delete this contact")
 
     if should_delete is None:
         print('[!] Aborted')
