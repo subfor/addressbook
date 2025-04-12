@@ -35,7 +35,7 @@ def add_contact(book: AddressBook):
     if email:
         record.add_email(email)
     if birthday:
-        record.add_birthday(birthday)
+        record.set_birthday(birthday)
     if address:
         record.set_address(address)
 
@@ -44,7 +44,9 @@ def add_contact(book: AddressBook):
 
 
 def edit_contact(book: AddressBook):
-    name = get_name()
+    name_completer = WordCompleter([name for name in book.keys()])
+
+    name = get_name(completer=name_completer)
 
     record = book.find(name)
     if not record:
@@ -98,9 +100,9 @@ def edit_contact(book: AddressBook):
             if data:
                 record.add_email(data)
         case 'address':
-            dialog = input_dialog(title=f"Add address",
-                                  text=f"Should update address?",
-                                  default=record.address.value)
+            dialog = input_dialog(title=f"Update address",
+                                  text=f"What is the address (leave blank to unset)?",
+                                  default=record.address.value if record.address else '')
             data = dialog.run()
 
             if data is None:
@@ -108,20 +110,46 @@ def edit_contact(book: AddressBook):
 
             record.set_address(data)
         case 'birthday':
-            dialog = input_dialog(title=f"Add birthday",
-                                  text=f"Should update birthday?",
-                                  default=record.birthday.stringify_date(),
-                                  validator=Validator.from_callable(Birthday.validate_date))
+            validator = lambda value: True if value == '' else Birthday.validate_date(value)
+
+            dialog = input_dialog(title=f"Update birthday",
+                                  text=f"When is the birthday (DD.MM.YYYY or leave blank to unset)?",
+                                  default=record.birthday.stringify_date() if record.birthday else '',
+                                  validator=Validator.from_callable(validator))
             data = dialog.run()
 
             if data is None:
                 return
 
-            record.add_birthday(data)
+            record.set_birthday(data)
 
     print("✅Contact saved.")
     draw_record(record.get_info())
 
+def delete_contact(book: AddressBook):
+    name_completer = WordCompleter([name for name in book.keys()])
+
+    name = get_name(completer=name_completer)
+
+    record = book.find(name)
+    if not record:
+        print(f"Contact for {name} not found")
+        return
+    else:
+        print(f"Found contact for {name}")
+
+    draw_record(record.get_info())
+
+    should_delete = prompt(message="Are you sure you want to delete this contact (yes/no)?",
+                    completer=WordCompleter(['yes', 'no']),
+                    validator=Validator.from_callable(lambda v: v == 'yes' or v == 'no'))
+
+    if should_delete != 'yes':
+        return
+
+    book.delete(name)
+
+    print("✅Contact deleted.")
 
 def change_phone(book: AddressBook):
     name = get_name()
@@ -180,7 +208,7 @@ def add_birthday(book: AddressBook):
     birthday = get_birthday()
     record = book.find(name)
     if record:
-        record.add_birthday(birthday)
+        record.set_birthday(birthday)
         print("\n✅ Birthday added.")
         draw_record(record.get_info())
     else:

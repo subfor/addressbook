@@ -12,9 +12,12 @@ from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
 
 
 def validated_prompt(label: str, validator=None, completer=None, optional=False):
-    def wrapper(session: PromptSession | None = None, label: str = label):
+    def wrapper(session: PromptSession | None = None,
+                label: str = label,
+                validator=validator,
+                completer=completer):
         if session is None:
-            session = PromptSession(completer=None)
+            session = PromptSession(completer=completer)
 
         while True:
             try:
@@ -74,6 +77,7 @@ COMMANDS = [
     "add email",
     "add birthday",
     "add note",
+    "delete contact",
     "hello",
     "all contacts",
     "exit",

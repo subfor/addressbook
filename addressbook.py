@@ -155,8 +155,11 @@ class Record:
     def find_email(self, email_address: str) -> str:
         return email_address if self.__get_email_index(email_address) else ""
 
-    def add_birthday(self, b_date: str) -> None:
-        self.birthday = Birthday(b_date)
+    def set_birthday(self, b_date: str | None) -> None:
+        if b_date is None or b_date == '':
+            self.birthday = None
+        else:
+            self.birthday = Birthday(b_date)
 
     def set_address(self, address: str | None) -> None:
         self.address = None if address is None or address == "" else Address(address)
@@ -240,7 +243,7 @@ class Record:
             return True
         return False
 
-class AddressBook(UserDict):
+class AddressBook(UserDict[str, Record]):
     def add_record(self, record: Record) -> None:
         self.data[record.name.value] = record
 

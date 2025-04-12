@@ -8,7 +8,7 @@ from commands import (add_birthday, add_contact, add_email, add_note_function,
                       change_email, change_phone, edit_note_function,
                       remove_note_function, search_notes_function, set_address,
                       show_all, show_all_notes_function, show_birthday,
-                      show_birthdays, show_phone, search_contacts, edit_contact)
+                      show_birthdays, show_phone, search_contacts, edit_contact, delete_contact)
 from notes import NotesManager
 from ui import autocomplete, bottom_toolbar, draw_header, style
 
@@ -84,6 +84,8 @@ def main():
                     show_all(book)
                 case "add birthday":
                     add_birthday(book)
+                case "delete contact":
+                    delete_contact(book)
                 case "edit contact":
                     edit_contact(book)
                 case "set address":
