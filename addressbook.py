@@ -2,7 +2,6 @@ import pickle
 import re
 from collections import UserDict
 from datetime import datetime, timedelta
-from warnings import catch_warnings
 from typing import Optional
 
 from email_validator import EmailNotValidError, validate_email

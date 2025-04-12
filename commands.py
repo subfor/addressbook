@@ -4,7 +4,7 @@ from prompt_toolkit.validation import Validator
 
 from notes import Note, NotesManager
 
-from addressbook import Record, AddressBook, Email, Phone, Birthday
+from addressbook import Record, AddressBook, Email, Birthday
 
 from ui import (draw_contacts, draw_record, draw_single_note, get_address,
                 get_birthday, get_email, get_name, get_new_email, get_birthday_range,

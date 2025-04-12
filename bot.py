@@ -1,6 +1,6 @@
 from functools import wraps
 
-from prompt_toolkit import PromptSession, prompt
+from prompt_toolkit import PromptSession
 
 from addressbook import (AddressBook, DateFormatError, EmailFormatError,
                          PhoneFormatError)
