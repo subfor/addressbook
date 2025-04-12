@@ -1,6 +1,5 @@
 from prompt_toolkit import prompt, PromptSession
 from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.shortcuts import yes_no_dialog, input_dialog
 from prompt_toolkit.validation import Validator
 
 from notes import Note, NotesManager
@@ -9,9 +8,7 @@ from addressbook import Record, AddressBook, Email, Phone, Birthday
 
 from ui import (draw_contacts, draw_record, draw_single_note, get_address,
                 get_birthday, get_email, get_name, get_new_email, get_birthday_range,
-                get_new_phone, get_old_email, get_old_phone, get_phone, get_term)
-
-
+                get_new_phone, get_old_email, get_old_phone, get_phone, get_term, get_confirm)
 
 def add_contact(book: AddressBook):
     name = get_name()
@@ -48,12 +45,16 @@ def edit_contact(book: AddressBook):
 
     name = get_name(completer=name_completer)
 
+    if name is None:
+        return
+
     record = book.find(name)
     if not record:
         print(f"Contact for {name} not found")
         return
     else:
         print(f"Found contact for {name}")
+        draw_record(record.get_info())
 
     words = ['phones', 'emails', 'address', 'birthday']
 
@@ -64,64 +65,83 @@ def edit_contact(book: AddressBook):
 
     match focus:
         case 'phones':
-            for phone in [phone for phone in record.phones]:
-                dialog = yes_no_dialog(title=f"Keep phone?",
-                                       text=f"Should keep {phone.value}?")
+            phone_input = get_phone(label='Enter a new or existing phone number',
+                              completer=WordCompleter([phone.value for phone in record.phones]))
 
-                data = dialog.run()
-
-                if not data:
-                    record.phones = [p for p in record.phones if phone.value != p.value]
-
-            dialog = input_dialog(title=f"Add phone?",
-                                  text="Input new phone:",
-                                  validator=Validator.from_callable(Phone.validate_phone))
-
-            data = dialog.run()
-
-            if data:
-                record.add_phone(data)
-        case 'emails':
-            for email in [email for email in record.emails]:
-                dialog = yes_no_dialog(title=f"Keep email?",
-                                       text=f"Should keep {email.value}?")
-
-                data = dialog.run()
-
-                if not data:
-                    record.emails = [e for e in record.emails if email.value != e.value]
-
-            dialog = input_dialog(title=f"Add email?",
-                                text="Input new email:",
-                                validator=Validator.from_callable(Email.is_email_valid))
-
-            data = dialog.run()
-
-            if data:
-                record.add_email(data)
-        case 'address':
-            dialog = input_dialog(title=f"Update address",
-                                  text=f"What is the address (leave blank to unset)?",
-                                  default=record.address.value if record.address else '')
-            data = dialog.run()
-
-            if data is None:
+            if not phone_input:
+                print('[!] Aborted')
                 return
 
-            record.set_address(data)
+            exists = len([phone for phone in record.phones if phone.value == phone_input]) > 0
+
+            if exists:
+                print(f"Contact already has this phone")
+
+                should_delete = get_confirm("Do you want to delete this phone from this contact")
+
+                if should_delete:
+                    record.remove_phone(phone_input)
+
+                    print("✅Phone deleted from contact.")
+            else:
+                print(f"Contact does not have this phone")
+
+                should_add = get_confirm("Do you want to add this phone to this contact")
+
+                if should_add:
+                    record.add_phone(phone_input)
+
+                    print("✅Phone added to contact.")
+        case 'emails':
+            email_input = get_email(label='Enter a new or existing email',
+                                    completer=WordCompleter([email.value for email in record.emails]),
+                                    live_validator=Email.is_email_valid)
+
+            if not email_input:
+                print('[!] Aborted')
+                return
+
+            exists = len([email for email in record.emails if email.value == email_input]) > 0
+
+            if exists:
+                print(f"Contact already has this email")
+
+                should_delete = get_confirm("Do you want to delete this email from this contact")
+
+                if should_delete:
+                    record.remove_email(email_input)
+
+                    print("✅Email deleted from contact.")
+            else:
+                print(f"Contact does not have this phone")
+
+                should_delete = get_confirm("Do you want to add this email to this contact")
+
+                if should_delete:
+                    record.add_email(email_input)
+
+                    print("✅Email added to contact.")
+        case 'address':
+            address = get_address(label='Enter new address (leave blank to unset)')
+
+            if address is None:
+                print('[!] Aborted')
+                return
+
+            record.set_address(address)
         case 'birthday':
             validator = lambda value: True if value == '' else Birthday.validate_date(value)
 
-            dialog = input_dialog(title=f"Update birthday",
-                                  text=f"When is the birthday (DD.MM.YYYY or leave blank to unset)?",
-                                  default=record.birthday.stringify_date() if record.birthday else '',
-                                  validator=Validator.from_callable(validator))
-            data = dialog.run()
+            birthday = get_birthday(label="Enter new birthday (leave blank to unset)",
+                                    live_validator=validator)
 
-            if data is None:
+            if birthday is None:
+                print('[!] Aborted')
                 return
 
-            record.set_birthday(data)
+            record.set_birthday(birthday)
+        case None:
+            print('[!] Aborted')
 
     print("✅Contact saved.")
     draw_record(record.get_info())
@@ -140,9 +160,7 @@ def delete_contact(book: AddressBook):
 
     draw_record(record.get_info())
 
-    should_delete = prompt(message="Are you sure you want to delete this contact (yes/no)?",
-                    completer=WordCompleter(['yes', 'no']),
-                    validator=Validator.from_callable(lambda v: v == 'yes' or v == 'no'))
+    should_delete = get_confirm("Are you sure you want to delete this contact (yes/no)?")
 
     if should_delete != 'yes':
         return

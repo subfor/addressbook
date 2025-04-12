@@ -1,6 +1,7 @@
-from prompt_toolkit import PromptSession
+from prompt_toolkit import PromptSession, prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
+from prompt_toolkit.validation import Validator
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -12,12 +13,15 @@ from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
 
 
 def validated_prompt(label: str, validator=None, completer=None, optional=False):
-    def wrapper(session: PromptSession | None = None,
+    def wrapper(*,
+                session: PromptSession | None = None,
                 label: str = label,
                 validator=validator,
+                live_validator=None,
                 completer=completer):
         if session is None:
-            session = PromptSession(completer=completer)
+            session = PromptSession(completer=completer,
+                                    validator=None if not live_validator else Validator.from_callable(live_validator))
 
         while True:
             try:
@@ -69,6 +73,16 @@ get_old_email = validated_prompt("Enter old email", validator=Record.validate_em
 get_new_email = validated_prompt("Enter new email", validator=Record.validate_email)
 
 get_term = validated_prompt("Enter search term")
+
+def get_confirm(question: str) -> bool | None:
+    try:
+        answer = prompt(f"🔹 {question} (yes/no)? ",
+                        completer=WordCompleter(['yes', 'no']),
+                        validator=Validator.from_callable(lambda v: v == 'yes' or v == 'no'))
+
+        return answer == 'yes'
+    except EOFError:
+        return None
 
 # Autocomplete
 
@@ -168,7 +182,7 @@ def draw_record(record: list) -> None:
     table.add_column(style="bold cyan", justify="left")
     table.add_column(style="white", overflow="fold")
 
-    table.add_row(" Phones:", phones)
+    table.add_row("📞 Phones:", phones)
     table.add_row("🎂 Birthday:", b_day)
     table.add_row("📧 Emails:", emails)
     table.add_row("🏠 Address:", address)

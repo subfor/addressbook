@@ -58,7 +58,7 @@ def main():
     print("Welcome to Personal Helper")
     try:
         while True:
-            user_input = prompt(
+            user_input = session.prompt(
                 [("class:prompt", ">>> ")], bottom_toolbar=bottom_toolbar,
                 completer=autocomplete, complete_while_typing=True, style=style,
                 validator=None,
