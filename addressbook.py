@@ -247,7 +247,7 @@ class AddressBook(UserDict[str, Record]):
         self.data[record.name.value] = record
 
     def add(self, name: str) -> Record:
-        record = Record(name)
+        record = Record(name.strip().capitalize())
 
         self.data[name] = record
 
