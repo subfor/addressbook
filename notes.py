@@ -1,4 +1,3 @@
-from ui import draw_notes
 from typing import List, Optional
 from datetime import datetime
 import pickle
@@ -44,10 +43,14 @@ class NotesManager:
     def add_note(self, title: str, content: str, tags: Optional[List[str]] = None):
         if self.find_note_by_title(title):
             print("[!] Note with this title already exists.")
-            return
+            return None
         note = Note(title, content, tags)
+
         self.notes.append(note)
+
         print("\n✅ Note added.")
+
+        return note
 
     def get_all_notes(self) -> List[Note]:
         return self.notes
@@ -85,11 +88,6 @@ class NotesManager:
         note.tags = new_tags
         note.updated_at = datetime.now()
         print(f"\n✅ Note '{note.title}' updated.")
-
-    def display_notes(self, notes: List[Note]):
-
-     sorted_notes = sorted(notes, key=lambda n: (len(n.tags), n.created_at))
-     draw_notes(sorted_notes)
 
     def get_autocomplete_words(self) -> List[str]:
         titles = [note.title for note in self.notes]

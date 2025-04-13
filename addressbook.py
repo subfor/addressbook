@@ -246,6 +246,13 @@ class AddressBook(UserDict[str, Record]):
     def add_record(self, record: Record) -> None:
         self.data[record.name.value] = record
 
+    def add(self, name: str) -> Record:
+        record = Record(name)
+
+        self.data[name] = record
+
+        return record
+
     def find(self, name: str) -> Record | None:
         return self.data.get(name.strip().capitalize())
 
@@ -289,8 +296,8 @@ class AddressBook(UserDict[str, Record]):
 
         return congrat_list
 
-    def get_all_records(self) -> list:
-        return [record.get_info() for record in self.data.values()]
+    def list_records(self) -> list[Record]:
+        return [record for record in self.data.values()]
 
     def __check_weekend(self, date: datetime.date) -> int:
         match date.isoweekday():
