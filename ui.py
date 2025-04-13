@@ -1,20 +1,31 @@
-from prompt_toolkit import PromptSession
+from prompt_toolkit import PromptSession, prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
+from prompt_toolkit.validation import Validator
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
 from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
-                         PhoneFormatError, Record)
+                         PhoneFormatError, Record, RangeFormatError)
 
 # Validete input
 
-def validated_prompt(label: str, validator=None, optional=False):
-    def wrapper():
+
+def validated_prompt(label: str, validator=None, completer=None, optional=False):
+    def wrapper(*,
+                session: PromptSession | None = None,
+                label: str = label,
+                validator=validator,
+                live_validator=None,
+                completer=completer):
+        if session is None:
+            session = PromptSession(completer=completer,
+                                    validator=None if not live_validator else Validator.from_callable(live_validator))
+
         while True:
             try:
-                value = PromptSession(completer=None).prompt(f"🔹 {label}: ").strip()
+                value = session.prompt(f"🔹 {label}: ", completer=completer).strip()
                 if not value and optional:
                     return ""
                 if validator:
@@ -22,6 +33,8 @@ def validated_prompt(label: str, validator=None, optional=False):
                 return value
             except KeyboardInterrupt:
                 raise
+            except RangeFormatError as e:
+                print(f"[!] {e.message}")
             except NameFormatError:
                 print("[!] Name cannot be blank")
             except PhoneFormatError:
@@ -30,6 +43,9 @@ def validated_prompt(label: str, validator=None, optional=False):
                 print("[!] Wrong email format.")
             except DateFormatError:
                 print("[!] Invalid date format. Use DD.MM.YYYY.")
+            except EOFError:
+                print("[!] Aborted")
+                return None
             except Exception:
                 print("[!] Invalid input. Try again.")
 
@@ -38,6 +54,7 @@ def validated_prompt(label: str, validator=None, optional=False):
 
 # Input functions
 
+get_birthday_range = validated_prompt("Enter range to look for birthdays", validator=Record.validate_name)
 get_name = validated_prompt("Enter name", validator=Record.validate_name)
 get_phone = validated_prompt("Enter phone", validator=Record.validate_phone)
 get_email = validated_prompt(
@@ -55,6 +72,18 @@ get_new_phone = validated_prompt("Enter new phone", validator=Record.validate_ph
 get_old_email = validated_prompt("Enter old email", validator=Record.validate_email)
 get_new_email = validated_prompt("Enter new email", validator=Record.validate_email)
 
+get_term = validated_prompt("Enter search term")
+
+def get_confirm(question: str) -> bool | None:
+    try:
+        answer = prompt(f"🔹 {question} (yes/no)? ",
+                        completer=WordCompleter(['yes', 'no']),
+                        validator=Validator.from_callable(lambda v: v == 'yes' or v == 'no'))
+
+        return answer == 'yes'
+    except EOFError:
+        return None
+
 # Autocomplete
 
 COMMANDS = [
@@ -62,6 +91,7 @@ COMMANDS = [
     "add email",
     "add birthday",
     "add note",
+    "delete contact",
     "hello",
     "all contacts",
     "exit",
@@ -84,8 +114,6 @@ class CommandCompleter(WordCompleter):
         if " " in text:
             return
         yield from super().get_completions(document, complete_event)
-
-autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
 autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
@@ -117,38 +145,12 @@ def draw_header() -> None:
     table.add_column(justify="left", ratio=1)
     table.add_column(justify="left", ratio=1)
 
-    table.add_row(
-        "[bold cyan]add contact[/bold cyan]",
-        "[bold cyan]add birthday[/bold cyan]",
-        "[bold cyan]add note[/bold cyan]",
-
-    )
-    table.add_row(
-        "[bold cyan]change phone[/bold cyan]",
-        "[bold cyan]show phone[/bold cyan]",
-        "[bold cyan]show birthday[/bold cyan]",
-    )
-    table.add_row(
-        "[bold cyan]add email[/bold cyan]",
-        "[bold cyan]change email[/bold cyan]",
-        "[bold cyan]set address[/bold cyan]",
-    )
-    table.add_row(
-        "[bold cyan]all contacts[/bold cyan]",
-        "[bold cyan]birthdays[/bold cyan]",
-        "[bold cyan]exit / quit[/bold cyan]",
-    )
-    table.add_row(
-        "[bold cyan]edit note[/bold cyan]",
-        "[bold cyan]remove note[/bold cyan]",
-        "[bold cyan]search notes[/bold cyan]",
-    )
-    table.add_row(
-        "[bold cyan]show all notes[/bold cyan]",
-        "",
-        "",
-
-    )
+    for i in range(0, len(COMMANDS) // 3 + (1 if len(COMMANDS) % 3 != 0 else 0)):
+        table.add_row(
+            f"[bold cyan]{COMMANDS[i * 3]}[/bold cyan]",
+            "" if i * 3 + 2 > len(COMMANDS) else f"[bold cyan]{COMMANDS[i * 3 + 1]}[/bold cyan]",
+            "" if i * 3 + 3 > len(COMMANDS) else f"[bold cyan]{COMMANDS[i * 3 + 2]}[/bold cyan]",
+        )
 
     panel = Panel(
         table,
@@ -180,7 +182,7 @@ def draw_record(record: list) -> None:
     table.add_column(style="bold cyan", justify="left")
     table.add_column(style="white", overflow="fold")
 
-    table.add_row(" Phones:", phones)
+    table.add_row("📞 Phones:", phones)
     table.add_row("🎂 Birthday:", b_day)
     table.add_row("📧 Emails:", emails)
     table.add_row("🏠 Address:", address)
