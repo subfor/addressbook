@@ -1,3 +1,5 @@
+from typing import Optional, Callable, cast
+
 from prompt_toolkit import PromptSession, prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
@@ -9,17 +11,30 @@ from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
 
 # Validete input
 
-
-def validated_prompt(label: str, validator=None, completer=None, optional=False):
-    def wrapper(*,
-                session: PromptSession | None = None,
-                label: str = label,
-                validator=validator,
-                live_validator=None,
-                completer=completer):
+# def validated_prompt(label: str, validator=None, completer=None, optional=False):
+def validated_prompt(
+        label: str,
+        validator: Optional[Callable[[str], None]] = None,
+        completer: Optional[WordCompleter] = None,
+        optional: bool = False,
+) -> Callable[..., str]:
+    def wrapper(
+            *,
+            session: PromptSession | None = None,
+            label: str = label,
+            validator=validator,
+            live_validator=None,
+            completer=completer,
+    ):
         if session is None:
-            session = PromptSession(completer=completer,
-                                    validator=None if not live_validator else Validator.from_callable(live_validator))
+            session = PromptSession(
+                completer=completer,
+                validator=(
+                    None
+                    if not live_validator
+                    else Validator.from_callable(live_validator)
+                ),
+            )
 
         while True:
             try:
@@ -42,16 +57,18 @@ def validated_prompt(label: str, validator=None, completer=None, optional=False)
             except DateFormatError:
                 print("[!] Invalid date format. Use DD.MM.YYYY.")
             except EOFError:
-                raise
+                print("[!] Aborted")
+                return None
             except Exception:
                 print("[!] Invalid input. Try again.")
 
-    return wrapper
-
+    return cast(Callable[..., str], wrapper)
 
 # Input functions
 
-get_birthday_range = validated_prompt("Enter range to look for birthdays", validator=Record.validate_name)
+get_birthday_range = validated_prompt(
+    "Enter range to look for birthdays", validator=Record.validate_name
+)
 get_name = validated_prompt("Enter name", validator=Record.validate_name)
 get_phone = validated_prompt("Enter phone", validator=Record.validate_phone)
 get_email = validated_prompt(
@@ -72,14 +89,13 @@ get_new_email = validated_prompt("Enter new email", validator=Record.validate_em
 get_term = validated_prompt("Enter search term")
 
 def get_confirm(question: str) -> bool | None:
-    try:
-        answer = prompt(f"🔹 {question} (yes/no)? ",
-                        completer=WordCompleter(['yes', 'no']),
-                        validator=Validator.from_callable(lambda v: v == 'yes' or v == 'no'))
+    answer = prompt(
+        f"🔹 {question} (yes/no)? ",
+        completer=WordCompleter(["yes", "no"]),
+        validator=Validator.from_callable(lambda v: v == "yes" or v == "no"),
+    )
 
-        return answer == 'yes'
-    except EOFError:
-        return None
+    return answer == "yes"
 
 # Autocomplete
 
