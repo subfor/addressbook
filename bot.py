@@ -1,17 +1,9 @@
 from functools import wraps
 
-from prompt_toolkit import PromptSession
-
-from addressbook import (AddressBook, DateFormatError, EmailFormatError,
+from addressbook import (DateFormatError, EmailFormatError,
                          PhoneFormatError)
-from commands import (add_birthday, add_contact, add_email, add_note_function,
-                      change_email, change_phone, edit_note_function,
-                      remove_note_function, search_notes_function, set_address,
-                      show_all, show_all_notes_function, show_birthday,
-                      show_birthdays, show_phone, search_contacts, edit_contact, delete_contact)
-from notes import NotesManager
-from ui import autocomplete, bottom_toolbar, draw_header, style
-
+from app_context import AppContext
+from commands import COMMANDS
 
 def input_error(func):
     @wraps(func)
@@ -49,77 +41,38 @@ def parse_input(user_input):
 
 
 def main():
-    draw_header()
-    book = AddressBook.load()
-    notes_manager = NotesManager.load()
-    session = PromptSession(
-        completer=autocomplete, complete_while_typing=True, style=style
-    )
     print("Welcome to Personal Helper")
-    try:
-        while True:
-            user_input = session.prompt(
-                [("class:prompt", ">>> ")], bottom_toolbar=bottom_toolbar,
-                completer=autocomplete, complete_while_typing=True, style=style,
-                validator=None,
-            )
 
-            parsed_user_input = parse_input(user_input)
+    context = AppContext.create()
 
-            if not parsed_user_input:
-                continue
+    context.interface.draw_header([command for command in COMMANDS.keys()]+['hello', 'quit / exit'])
 
-            command, *args = parsed_user_input
+    while True:
+        try:
+            user_input = context.interface.prompt_command()
+
+            command = user_input.strip()
 
             match command:
                 case "exit" | "quit":
                     break
                 case "hello":
                     print("How can I help you?")
-                case "add contact":
-                    add_contact(book)
-                case "add email":
-                    add_email(book)
-                case "all contacts":
-                    show_all(book)
-                case "add birthday":
-                    add_birthday(book)
-                case "delete contact":
-                    delete_contact(book)
-                case "edit contact":
-                    edit_contact(book)
-                case "set address":
-                    set_address(book)
-                case "show birthday":
-                    show_birthday(book)
-                case "show birthdays":
-                    show_birthdays(book)
-                case "change phone":
-                    change_phone(book)
-                case "change email":
-                    change_email(book)
-                case "show phone":
-                    show_phone(book)
-                case "search contacts":
-                    search_contacts(book)
-                case "add note":
-                    add_note_function(notes_manager)
-                case "edit note":
-                    edit_note_function(notes_manager)
-                case "remove note":
-                    remove_note_function(notes_manager)
-                case "search notes":
-                    search_notes_function(notes_manager)
-                case "show notes":
-                    show_all_notes_function(notes_manager)
-
                 case _:
-                    print("Invalid command.")
-    except KeyboardInterrupt:
-        print("\n[✋] Interrupted by user (Ctrl+C)")
-    notes_manager.save()
-    book.save()
-    print("\n📁 Address book saved. Bye!")
+                    command_fn = COMMANDS.get(command)
+
+                    if command_fn is None:
+                        print("❌Invalid command")
+                    else:
+                        command_fn(context)
+        except EOFError:
+            print("❗Aborted (Ctrl+D)")
+        except KeyboardInterrupt:
+            print("✋Interrupted by user (Ctrl+C)")
+            break
+
+    context.state.save()
+    print("📁Address book saved. Bye!")
 
 
 if __name__ == "__main__":
