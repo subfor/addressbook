@@ -11,8 +11,16 @@ def draw_header(console: Console, commands: list[str]) -> None:
     for i in range(0, len(commands) // 3 + (1 if len(commands) % 3 != 0 else 0)):
         table.add_row(
             f"[bold cyan]{commands[i * 3]}[/bold cyan]",
-            "" if i * 3 + 2 > len(commands) else f"[bold cyan]{commands[i * 3 + 1]}[/bold cyan]",
-            "" if i * 3 + 3 > len(commands) else f"[bold cyan]{commands[i * 3 + 2]}[/bold cyan]",
+            (
+                ""
+                if i * 3 + 2 > len(commands)
+                else f"[bold cyan]{commands[i * 3 + 1]}[/bold cyan]"
+            ),
+            (
+                ""
+                if i * 3 + 3 > len(commands)
+                else f"[bold cyan]{commands[i * 3 + 2]}[/bold cyan]"
+            ),
         )
 
     panel = Panel(
