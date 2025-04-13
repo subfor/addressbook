@@ -1,6 +1,6 @@
 from typing import Optional, Callable, cast
 
-from prompt_toolkit import PromptSession, prompt
+from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
 from prompt_toolkit.validation import Validator
@@ -86,53 +86,3 @@ get_old_email = validated_prompt("Enter old email", validator=Record.validate_em
 get_new_email = validated_prompt("Enter new email", validator=Record.validate_email)
 
 get_term = validated_prompt("Enter search term")
-
-# Autocomplete
-
-COMMANDS = [
-    "add contact",
-    "add email",
-    "add birthday",
-    "add note",
-    "delete contact",
-    "hello",
-    "all contacts",
-    "exit",
-    "quit",
-    "set address",
-    "show birthday",
-    "show birthdays",
-    "change phone",
-    "change email",
-    "show phone",
-    "edit note",
-    "remove note",
-    "search notes",
-    "show notes",
-]
-
-class CommandCompleter(WordCompleter):
-    def get_completions(self, document, complete_event):
-        text = document.text_before_cursor.strip().lower()
-        if " " in text:
-            return
-        yield from super().get_completions(document, complete_event)
-
-style = Style.from_dict(
-    {
-        "prompt": "bold #00ffcc",
-        "": "#ffffff",
-        "completion-menu.completion": "bg:#1f1f1f #aaaaaa",
-        "completion-menu.completion.current": "bg:#00afff #ffffff",
-        "scrollbar.background": "bg:#3a3a3a",
-        "scrollbar.button": "bg:#5f5f5f",
-        "bottom-toolbar": "italic #888888",
-    }
-)
-
-console = Console()
-
-def bottom_toolbar() -> list:
-    return [
-        ("class:bottom-toolbar", " 🧠 Tab — autocomplete | Ctrl+C or exit/quit — exit")
-    ]
