@@ -146,5 +146,3 @@ def bottom_toolbar() -> list:
     return [
         ("class:bottom-toolbar", " 🧠 Tab — autocomplete | Ctrl+C or exit/quit — exit")
     ]
-
-# Formatted output
