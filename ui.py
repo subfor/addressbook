@@ -1,3 +1,5 @@
+from typing import Callable, Optional, cast
+
 from prompt_toolkit import PromptSession, prompt
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.styles import Style
@@ -7,21 +9,35 @@ from rich.panel import Panel
 from rich.table import Table
 
 from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
-                         PhoneFormatError, Record, RangeFormatError)
+                         PhoneFormatError, RangeFormatError, Record)
 
 # Validete input
 
 
-def validated_prompt(label: str, validator=None, completer=None, optional=False):
-    def wrapper(*,
-                session: PromptSession | None = None,
-                label: str = label,
-                validator=validator,
-                live_validator=None,
-                completer=completer):
+# def validated_prompt(label: str, validator=None, completer=None, optional=False):
+def validated_prompt(
+    label: str,
+    validator: Optional[Callable[[str], None]] = None,
+    completer: Optional[WordCompleter] = None,
+    optional: bool = False,
+) -> Callable[..., str]:
+    def wrapper(
+        *,
+        session: PromptSession | None = None,
+        label: str = label,
+        validator=validator,
+        live_validator=None,
+        completer=completer,
+    ):
         if session is None:
-            session = PromptSession(completer=completer,
-                                    validator=None if not live_validator else Validator.from_callable(live_validator))
+            session = PromptSession(
+                completer=completer,
+                validator=(
+                    None
+                    if not live_validator
+                    else Validator.from_callable(live_validator)
+                ),
+            )
 
         while True:
             try:
@@ -49,12 +65,14 @@ def validated_prompt(label: str, validator=None, completer=None, optional=False)
             except Exception:
                 print("[!] Invalid input. Try again.")
 
-    return wrapper
+    return cast(Callable[..., str], wrapper)
 
 
 # Input functions
 
-get_birthday_range = validated_prompt("Enter range to look for birthdays", validator=Record.validate_name)
+get_birthday_range = validated_prompt(
+    "Enter range to look for birthdays", validator=Record.validate_name
+)
 get_name = validated_prompt("Enter name", validator=Record.validate_name)
 get_phone = validated_prompt("Enter phone", validator=Record.validate_phone)
 get_email = validated_prompt(
@@ -74,15 +92,19 @@ get_new_email = validated_prompt("Enter new email", validator=Record.validate_em
 
 get_term = validated_prompt("Enter search term")
 
+
 def get_confirm(question: str) -> bool | None:
     try:
-        answer = prompt(f"🔹 {question} (yes/no)? ",
-                        completer=WordCompleter(['yes', 'no']),
-                        validator=Validator.from_callable(lambda v: v == 'yes' or v == 'no'))
+        answer = prompt(
+            f"🔹 {question} (yes/no)? ",
+            completer=WordCompleter(["yes", "no"]),
+            validator=Validator.from_callable(lambda v: v == "yes" or v == "no"),
+        )
 
-        return answer == 'yes'
+        return answer == "yes"
     except EOFError:
         return None
+
 
 # Autocomplete
 
@@ -108,12 +130,14 @@ COMMANDS = [
     "show notes",
 ]
 
+
 class CommandCompleter(WordCompleter):
     def get_completions(self, document, complete_event):
         text = document.text_before_cursor.strip().lower()
         if " " in text:
             return
         yield from super().get_completions(document, complete_event)
+
 
 autocomplete = CommandCompleter(COMMANDS, ignore_case=True)
 
@@ -131,10 +155,12 @@ style = Style.from_dict(
 
 console = Console()
 
+
 def bottom_toolbar() -> list:
     return [
         ("class:bottom-toolbar", " 🧠 Tab — autocomplete | Ctrl+C or exit/quit — exit")
     ]
+
 
 # Header
 
@@ -148,8 +174,16 @@ def draw_header() -> None:
     for i in range(0, len(COMMANDS) // 3 + (1 if len(COMMANDS) % 3 != 0 else 0)):
         table.add_row(
             f"[bold cyan]{COMMANDS[i * 3]}[/bold cyan]",
-            "" if i * 3 + 2 > len(COMMANDS) else f"[bold cyan]{COMMANDS[i * 3 + 1]}[/bold cyan]",
-            "" if i * 3 + 3 > len(COMMANDS) else f"[bold cyan]{COMMANDS[i * 3 + 2]}[/bold cyan]",
+            (
+                ""
+                if i * 3 + 2 > len(COMMANDS)
+                else f"[bold cyan]{COMMANDS[i * 3 + 1]}[/bold cyan]"
+            ),
+            (
+                ""
+                if i * 3 + 3 > len(COMMANDS)
+                else f"[bold cyan]{COMMANDS[i * 3 + 2]}[/bold cyan]"
+            ),
         )
 
     panel = Panel(
@@ -161,6 +195,7 @@ def draw_header() -> None:
     )
 
     console.print(panel)
+
 
 # Formatted output
 
@@ -175,6 +210,7 @@ def draw_contacts(contacts: list) -> None:
     for contact in contacts:
         table.add_row(*contact)
     console.print(table)
+
 
 def draw_record(record: list) -> None:
     name, phones, b_day, emails, address = record
@@ -195,6 +231,7 @@ def draw_record(record: list) -> None:
         expand=False,
     )
     console.print(panel)
+
 
 def draw_single_note(note) -> None:
     table = Table.grid(padding=(0, 2))
