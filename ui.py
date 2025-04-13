@@ -57,8 +57,7 @@ def validated_prompt(
             except DateFormatError:
                 print("[!] Invalid date format. Use DD.MM.YYYY.")
             except EOFError:
-                print("[!] Aborted")
-                return None
+                raise
             except Exception:
                 print("[!] Invalid input. Try again.")
 
