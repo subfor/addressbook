@@ -1,5 +1,5 @@
-Contacts & Notes Help-a-bot
-===========================
+Contacts & Notes Bot
+====================
 
 
 Installation instructions

@@ -5,6 +5,9 @@ from rich.table import Table
 from notes import Note
 
 def draw_note(console: Console, note: Note) -> None:
+    """
+    Displays a single note in a card view in console
+    """
     table = Table.grid(padding=(0, 2))
     table.add_column(justify="left", style="bold cyan")
     table.add_column(justify="left", style="white")

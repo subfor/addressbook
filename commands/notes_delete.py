@@ -1,6 +1,9 @@
 from app_context import AppContext
 
 def notes_delete(context: AppContext):
+    """
+    Delete an existing note
+    """
     title = input("Enter the title of the note you want to remove: ")
 
     note = context.state.notes.find_note_by_title(title)

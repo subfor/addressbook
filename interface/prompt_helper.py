@@ -1,8 +1,8 @@
 from prompt_toolkit import PromptSession
-from prompt_toolkit.completion import Completer, DummyCompleter
+from prompt_toolkit.completion import Completer
 from prompt_toolkit.formatted_text import AnyFormattedText
 from prompt_toolkit.styles import Style
-from prompt_toolkit.validation import Validator, DummyValidator
+from prompt_toolkit.validation import Validator
 
 style = Style.from_dict(
     {

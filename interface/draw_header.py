@@ -3,6 +3,9 @@ from rich.panel import Panel
 from rich.table import Table
 
 def draw_header(console: Console, commands: list[str]) -> None:
+    """
+    Draws bot greeting header
+    """
     table = Table.grid(expand=True)
     table.add_column(justify="left", ratio=1)
     table.add_column(justify="left", ratio=1)
@@ -25,7 +28,7 @@ def draw_header(console: Console, commands: list[str]) -> None:
 
     panel = Panel(
         table,
-        title="[bold magenta]📒 Address Book[/bold magenta]",
+        title="[bold magenta]📒Contacts & Notes Bot[/bold magenta]",
         subtitle="[magenta]Interactive assistant.[/magenta]",
         border_style="bright_magenta",
         padding=(1, 2),

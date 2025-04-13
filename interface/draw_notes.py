@@ -4,6 +4,9 @@ from rich.table import Table
 from notes import Note
 
 def draw_notes(console: Console, notes: list[Note]) -> None:
+    """
+    Displays a list of notes in a table view using rows in console
+    """
     table = Table(title="📂 All Notes")
 
     table.add_column("📝 Title", style="bold cyan", no_wrap=True)

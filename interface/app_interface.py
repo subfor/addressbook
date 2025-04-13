@@ -12,8 +12,12 @@ from .prompt_command import prompt_command
 from .prompt_confirm import prompt_confirm
 from .prompt_select import prompt_select
 
-
 class AppInterface:
+    """
+    This class is responsible for UI of the bot,
+    providing methods for input and output of information
+    """
+
     def __init__(self):
         self.console = Console()
         pass

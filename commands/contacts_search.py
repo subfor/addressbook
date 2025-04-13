@@ -3,6 +3,9 @@ from app_context import AppContext
 from ui import get_term
 
 def contacts_search(context: AppContext):
+    """
+    Searches through contacts for matches on name, phones, emails, birthday and address
+    """
     term = get_term()
 
     if term is None:

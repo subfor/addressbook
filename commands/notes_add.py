@@ -2,6 +2,9 @@ from app_context import AppContext
 
 
 def notes_add(context: AppContext):
+    """
+    Add a new note
+    """
     title = input("Enter note title: ")
 
     note = context.state.notes.find_note_by_title(title)

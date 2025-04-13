@@ -2,6 +2,9 @@ from addressbook import AddressBook
 from notes import NotesManager
 
 class AppState:
+    """
+    Combines all parts of bots state and handles their persistence
+    """
     def __init__(self, *, notes: NotesManager, book: AddressBook):
         self.book = book
         self.notes = notes

@@ -2,6 +2,9 @@ from app_context import AppContext
 from ui import get_name, get_phone, get_email, get_birthday, get_address
 
 def contacts_add(context: AppContext):
+    """
+    Adds a new contact
+    """
     name = get_name()
 
     record = context.state.book.find(name)

@@ -1,50 +1,6 @@
-from prompt_toolkit.completion import NestedCompleter, WordCompleter
+from prompt_toolkit.completion import WordCompleter
 
-from .prompt_helper import prompt_helper, style
-
-# commands_completer = NestedCompleter.from_nested_dict({
-#     'add contact': None,
-#     'add note': None,
-#     'add': {
-#         'contact',
-#         'note',
-#     },
-#     'delete contact': None,
-#     'delete note': None,
-#     'delete': {
-#         'contact',
-#         'note',
-#     },
-#     'edit contact': None,
-#     'edit note': None,
-#     'edit': {
-#         'contact',
-#         'note',
-#     },
-#     'exit': None,
-#     'hello': None,
-#     'list contacts': None,
-#     'list notes': None,
-#     'list': {
-#         'contacts',
-#         'notes',
-#     },
-#     'show birthdays': None,
-#     'show contact': None,
-#     'show note': None,
-#     'show': {
-#         'birthdays'
-#         'contact',
-#         'note',
-#     },
-#     'search contacts': None,
-#     'search notes': None,
-#     'search': {
-#         'contacts',
-#         'notes',
-#     },
-#     'quit': None,
-# })
+from .prompt_helper import prompt_helper
 
 class CommandCompleter(WordCompleter):
     def get_completions(self, document, complete_event):
@@ -80,4 +36,7 @@ commands_session = prompt_helper(message=[("class:prompt", ">>> ")],
                                  bottom_toolbar=bottom_toolbar_default)
 
 def prompt_command():
+    """
+    Prompts user to input a text command and returns the response
+    """
     return commands_session.prompt()

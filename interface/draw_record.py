@@ -4,6 +4,9 @@ from rich.table import Table
 from addressbook import Record
 
 def draw_record(console, record: Record):
+    """
+    Displays a single contact in a card view in console
+    """
     table = Table.grid(padding=(0, 2))
     table.add_column(style="bold cyan", justify="left")
     table.add_column(style="white", overflow="fold")

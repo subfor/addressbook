@@ -3,6 +3,9 @@ from app_context import AppContext
 from ui import get_birthday_range
 
 def birthdays_show(context: AppContext):
+    """
+    Show a list of upcoming birthdays in specified range
+    """
     range_int = int(get_birthday_range())
 
     birthdays = context.state.book.get_upcoming_birthday(limit=range_int)

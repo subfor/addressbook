@@ -1,6 +1,9 @@
 from app_context import AppContext
 
 def notes_show(context: AppContext):
+    """
+    Show an existing note in a card view
+    """
     title = input("Enter note title: ")
 
     note = context.state.notes.find_note_by_title(title)

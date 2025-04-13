@@ -2,16 +2,13 @@ from typing import Optional, Callable, cast
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.completion import WordCompleter
-from prompt_toolkit.styles import Style
 from prompt_toolkit.validation import Validator
-from rich.console import Console
 
 from addressbook import (DateFormatError, EmailFormatError, NameFormatError,
                          PhoneFormatError, Record, RangeFormatError)
 
 # Validete input
 
-# def validated_prompt(label: str, validator=None, completer=None, optional=False):
 def validated_prompt(
         label: str,
         validator: Optional[Callable[[str], None]] = None,

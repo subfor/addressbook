@@ -4,6 +4,9 @@ from app_context import AppContext
 from ui import get_name
 
 def contacts_delete(context: AppContext):
+    """
+    Deletes an existing contact
+    """
     name_completer = WordCompleter([name for name in context.state.book.keys()])
 
     name = get_name(completer=name_completer)

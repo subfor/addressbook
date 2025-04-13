@@ -7,6 +7,10 @@ from ui import get_name, get_phone, get_address, get_birthday, get_email
 edit_sections = ['phones', 'emails', 'address', 'birthday']
 
 def contacts_edit(context: AppContext):
+    """
+    Edits an existing contact
+    """
+
     name_completer = WordCompleter([name for name in context.state.book.keys()])
 
     name = get_name(completer=name_completer)

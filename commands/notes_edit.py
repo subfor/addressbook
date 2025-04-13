@@ -1,6 +1,10 @@
 from app_context import AppContext
 
 def notes_edit(context: AppContext):
+    """
+    Edit an existing note
+    """
+
     title = input("Enter the title of the note you want to edit: ")
 
     note = context.state.notes.find_note_by_title(title)

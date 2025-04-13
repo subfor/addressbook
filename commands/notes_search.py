@@ -4,6 +4,9 @@ from prompt_toolkit.completion import WordCompleter
 from app_context import AppContext
 
 def notes_search(context: AppContext):
+    """
+    Searches through notes for matches on tags
+    """
     tag_completer = WordCompleter(
         context.state.notes.get_autocomplete_words(), ignore_case=True
     )

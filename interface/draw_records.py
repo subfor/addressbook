@@ -5,6 +5,9 @@ from addressbook import Record
 
 
 def draw_records(console: Console, records: list[Record], title:str):
+    """
+    Displays a list of contacts in a table view using rows in console
+    """
     table = Table(title=title)
     table.add_column("Name", justify="left", style="cyan", no_wrap=True)
     table.add_column("Phones", style="magenta")
