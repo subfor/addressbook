@@ -9,6 +9,7 @@ from .draw_notes import draw_notes
 from .draw_record import draw_record
 from .draw_records import draw_records
 from .prompt_command import prompt_command
+from .prompt_confirm import prompt_confirm
 from .prompt_select import prompt_select
 
 
@@ -49,3 +50,6 @@ class AppInterface:
 
     def prompt_select(self, message: str, options: list[str]):
         return prompt_select(message, options)
+
+    def prompt_confirm(self, message: str):
+        return prompt_confirm(message)

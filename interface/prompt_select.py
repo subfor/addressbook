@@ -4,7 +4,7 @@ from prompt_toolkit.validation import Validator
 from .prompt_helper import prompt_helper
 
 def prompt_select(message: str, options: list[str]):
-    session = prompt_helper(message=message,
+    session = prompt_helper(message=f"🔹 {message} ({"/".join(options)})? ",
                             completer=WordCompleter(options),
                             complete_while_typing=True,
                             validator=Validator.from_callable(lambda i: i in options),

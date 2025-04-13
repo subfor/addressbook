@@ -1,6 +1,4 @@
 from app_context import AppContext
-from ui import get_confirm
-
 
 def notes_delete(context: AppContext):
     title = input("Enter the title of the note you want to remove: ")
@@ -13,7 +11,7 @@ def notes_delete(context: AppContext):
 
     context.interface.draw_note(note)
 
-    should_delete = get_confirm("Are you sure you want to delete this contact")
+    should_delete = context.interface.prompt_confirm("Are you sure you want to delete this contact")
 
     if should_delete:
         return

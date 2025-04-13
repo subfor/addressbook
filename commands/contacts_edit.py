@@ -2,7 +2,7 @@ from prompt_toolkit.completion import WordCompleter
 
 from addressbook import Birthday, Email
 from app_context import AppContext
-from ui import get_name, get_phone, get_confirm, get_address, get_birthday, get_email
+from ui import get_name, get_phone, get_address, get_birthday, get_email
 
 edit_sections = ['phones', 'emails', 'address', 'birthday']
 
@@ -19,7 +19,7 @@ def contacts_edit(context: AppContext):
     context.interface.draw_success(f"Found contact for {name}")
     context.interface.draw_record(record)
 
-    focus = context.interface.prompt_select('What do you want to edit? ',
+    focus = context.interface.prompt_select('What do you want to edit',
                                             edit_sections)
 
     match focus:
@@ -32,7 +32,7 @@ def contacts_edit(context: AppContext):
             if exists:
                 print(f"Contact already has this phone")
 
-                should_delete = get_confirm("Do you want to delete this phone from this contact")
+                should_delete = context.interface.prompt_confirm("Do you want to delete this phone from this contact")
 
                 if should_delete:
                     record.remove_phone(phone_input)
@@ -41,7 +41,7 @@ def contacts_edit(context: AppContext):
             else:
                 print(f"Contact does not have this phone")
 
-                should_add = get_confirm("Do you want to add this phone to this contact")
+                should_add = context.interface.prompt_confirm("Do you want to add this phone to this contact")
 
                 if should_add:
                     record.add_phone(phone_input)
@@ -57,7 +57,7 @@ def contacts_edit(context: AppContext):
             if exists:
                 print(f"Contact already has this email")
 
-                should_delete = get_confirm("Do you want to delete this email from this contact")
+                should_delete = context.interface.prompt_confirm("Do you want to delete this email from this contact")
 
                 if should_delete:
                     record.remove_email(email_input)
@@ -66,7 +66,7 @@ def contacts_edit(context: AppContext):
             else:
                 print(f"Contact does not have this phone")
 
-                should_delete = get_confirm("Do you want to add this email to this contact")
+                should_delete = context.interface.prompt_confirm("Do you want to add this email to this contact")
 
                 if should_delete:
                     record.add_email(email_input)

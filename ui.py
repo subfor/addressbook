@@ -87,15 +87,6 @@ get_new_email = validated_prompt("Enter new email", validator=Record.validate_em
 
 get_term = validated_prompt("Enter search term")
 
-def get_confirm(question: str) -> bool | None:
-    answer = prompt(
-        f"🔹 {question} (yes/no)? ",
-        completer=WordCompleter(["yes", "no"]),
-        validator=Validator.from_callable(lambda v: v == "yes" or v == "no"),
-    )
-
-    return answer == "yes"
-
 # Autocomplete
 
 COMMANDS = [

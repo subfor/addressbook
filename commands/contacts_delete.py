@@ -1,7 +1,7 @@
 from prompt_toolkit.completion import WordCompleter
 
 from app_context import AppContext
-from ui import get_name, get_confirm
+from ui import get_name
 
 def contacts_delete(context: AppContext):
     name_completer = WordCompleter([name for name in context.state.book.keys()])
@@ -16,7 +16,7 @@ def contacts_delete(context: AppContext):
     context.interface.draw_info(f"Found contact for {name}")
     context.interface.draw_record(record)
 
-    should_delete = get_confirm("Are you sure you want to delete this contact")
+    should_delete = context.interface.prompt_confirm("Are you sure you want to delete this contact")
 
     if not should_delete:
         return
